@@ -1,28 +1,34 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
-import { useEffect, useState } from "react";
-import {
-  RiMenuLine,
-  RiUser3Line,
-  RiShoppingBasketLine,
-  RiArrowRightLine,
-  RiTruckLine,
-  RiLoginBoxLine,
-  RiUserAddLine,
-} from "@remixicon/react";
-import { Logo } from "./logo";
-import { useCartStore } from "@/store/cart.store";
-import { cn, formatAr } from "@/lib/utils";
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { cn, formatAr } from "@/lib/utils";
+import { useCartStore } from "@/store/cart.store";
+import {
+  RiArrowRightLine,
+  RiLoginBoxLine,
+  RiMenuLine,
+  RiShoppingBasketLine,
+  RiTruckLine,
+  RiUser3Line,
+  RiUserAddLine,
+} from "@remixicon/react";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Logo } from "./logo";
 
 const NAV = [
   { label: "Boutique", href: "/boutique" },
@@ -48,13 +54,19 @@ export function Header() {
   }, []);
 
   return (
-    <header className={cn("site-header sticky top-0 z-50", scrolled && "is-scrolled")}>
-      <div className="mx-auto flex h-20 max-w-[1400px] items-center justify-between px-5 lg:px-10">
+    <header
+      className={cn("site-header sticky top-0 z-50", scrolled && "is-scrolled")}
+    >
+      <div className="mx-auto flex h-20 max-w-350 items-center justify-between px-5 lg:px-10">
         <div className="flex items-center gap-10">
           <Logo size="lg" />
           <nav className="hidden items-center gap-8 lg:flex">
             {NAV.map((item) => (
-              <Link key={item.href} href={item.href} className="link-underline text-[0.9rem] font-medium text-ink">
+              <Link
+                key={item.href}
+                href={item.href}
+                className="link-underline text-[0.9rem] font-medium text-ink"
+              >
                 {item.label}
               </Link>
             ))}
@@ -76,23 +88,35 @@ export function Header() {
               </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
-                <Link href="/connexion" className="flex w-full items-center gap-2.5">
+                <Link
+                  href="/connexion"
+                  className="flex w-full items-center gap-2.5"
+                >
                   <RiLoginBoxLine size={16} /> Se connecter
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Link href="/inscription" className="flex w-full items-center gap-2.5">
+                <Link
+                  href="/inscription"
+                  className="flex w-full items-center gap-2.5"
+                >
                   <RiUserAddLine size={16} /> Créer un compte
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
-                <Link href="/suivi-commande" className="flex w-full items-center gap-2.5">
+                <Link
+                  href="/suivi-commande"
+                  className="flex w-full items-center gap-2.5"
+                >
                   <RiTruckLine size={16} /> Suivre une commande
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Link href="/compte" className="flex w-full items-center gap-2.5">
+                <Link
+                  href="/compte"
+                  className="flex w-full items-center gap-2.5"
+                >
                   <RiUser3Line size={16} /> Mon compte
                 </Link>
               </DropdownMenuItem>
@@ -107,7 +131,7 @@ export function Header() {
             >
               <RiShoppingBasketLine size={20} />
               {count > 0 && (
-                <span className="absolute right-0 top-0 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-coral px-1 text-[10px] font-bold text-paper-raised">
+                <span className="absolute right-0 top-0 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-coral px-1 text-[10px] font-bold text-paper-raised">
                   {count}
                 </span>
               )}
@@ -119,8 +143,13 @@ export function Header() {
               <DropdownMenuSeparator />
               {lines.length === 0 ? (
                 <div className="px-3 py-6 text-center">
-                  <p className="text-sm text-ink-soft">Votre panier est vide.</p>
-                  <Link href="/boutique" className="btn-primary mt-3 inline-flex px-5 py-2 text-xs font-semibold">
+                  <p className="text-sm text-ink-soft">
+                    Votre panier est vide.
+                  </p>
+                  <Link
+                    href="/boutique"
+                    className="btn-primary mt-3 inline-flex px-5 py-2 text-xs font-semibold"
+                  >
                     Découvrir la boutique
                   </Link>
                 </div>
@@ -128,14 +157,26 @@ export function Header() {
                 <>
                   <div className="max-h-72 space-y-1 overflow-y-auto px-1 py-1">
                     {lines.slice(0, 4).map((l) => (
-                      <div key={l.product.slug} className="flex items-center gap-3 rounded-lg px-2 py-2">
+                      <div
+                        key={l.product.slug}
+                        className="flex items-center gap-3 rounded-lg px-2 py-2"
+                      >
                         <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-md">
-                          <Image src={l.product.images[0]} alt={l.product.name} fill className="object-cover" sizes="48px" />
+                          <Image
+                            src={l.product.images[0]}
+                            alt={l.product.name}
+                            fill
+                            className="object-cover"
+                            sizes="48px"
+                          />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium text-ink">{l.product.name}</p>
+                          <p className="truncate text-sm font-medium text-ink">
+                            {l.product.name}
+                          </p>
                           <p className="text-xs text-ink-soft">
-                            Qté {l.quantity} · {formatAr(l.product.price * l.quantity)}
+                            Qté {l.quantity} ·{" "}
+                            {formatAr(l.product.price * l.quantity)}
                           </p>
                         </div>
                         <button
@@ -152,7 +193,9 @@ export function Header() {
                       </div>
                     ))}
                     {lines.length > 4 && (
-                      <p className="px-2 pt-1 text-xs text-ink-soft">+ {lines.length - 4} autre(s) article(s)</p>
+                      <p className="px-2 pt-1 text-xs text-ink-soft">
+                        + {lines.length - 4} autre(s) article(s)
+                      </p>
                     )}
                   </div>
                   <DropdownMenuSeparator />
@@ -161,10 +204,16 @@ export function Header() {
                     <span>{formatAr(subtotal)}</span>
                   </div>
                   <div className="flex gap-2 p-2 pt-1">
-                    <Link href="/panier" className="btn-outline flex-1 justify-center py-2 text-xs font-semibold">
+                    <Link
+                      href="/panier"
+                      className="btn-outline flex-1 justify-center py-2 text-xs font-semibold"
+                    >
                       Voir le panier
                     </Link>
-                    <Link href="/checkout" className="btn-coral flex-1 justify-center py-2 text-xs font-semibold">
+                    <Link
+                      href="/checkout"
+                      className="btn-coral flex-1 justify-center py-2 text-xs font-semibold"
+                    >
                       Commander
                     </Link>
                   </div>
