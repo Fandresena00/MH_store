@@ -1,0 +1,335 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ------------------------------------------------------------------------
+   THEME MAPPING (Tailwind v4 @theme inline)
+   Expose every custom token as a Tailwind utility: bg-teal, text-coral,
+   font-display, rounded-lg, etc. This is what turns the tokens below into
+   usable classes across the app.
+------------------------------------------------------------------------ */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-manrope);
+  --font-display: var(--font-fraunces);
+  --font-mono: var(--font-geist-mono);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Palette de marque M&H Store — dérivée du logo (bouclier sarcelle + corail) */
+  --color-teal: var(--teal);
+  --color-teal-deep: var(--teal-deep);
+  --color-teal-vivid: var(--teal-vivid);
+  --color-coral: var(--coral);
+  --color-coral-deep: var(--coral-deep);
+  --color-sand: var(--sand);
+  --color-paper: var(--paper);
+  --color-paper-raised: var(--paper-raised);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-success: var(--success);
+  --color-error: var(--error);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* ------------------------------------------------------------------------
+   TOKENS — valeurs exactes pixel-samplées sur le logo M&H Store
+   Sarcelle rgb(44,94,95) · Corail rgb(225,122,87) · Fond papier chaud
+------------------------------------------------------------------------ */
+:root {
+  --background: oklch(0.976 0.01 86);
+  --foreground: oklch(0.235 0.022 50);
+
+  --card: oklch(0.992 0.006 86);
+  --card-foreground: oklch(0.235 0.022 50);
+  --popover: oklch(0.995 0.004 86);
+  --popover-foreground: oklch(0.235 0.022 50);
+
+  /* Sarcelle du bouclier — plus vive pour les actions, plus sombre pour les fonds */
+  --primary: oklch(0.5 0.088 196);
+  --primary-foreground: oklch(0.99 0.006 86);
+
+  --secondary: oklch(0.93 0.026 85);
+  --secondary-foreground: oklch(0.235 0.022 50);
+  --muted: oklch(0.945 0.015 85);
+  --muted-foreground: oklch(0.48 0.024 55);
+
+  /* Corail du bouclier — accent chaud, utilisé avec parcimonie */
+  --accent: oklch(0.93 0.04 42);
+  --accent-foreground: oklch(0.5 0.15 35);
+
+  --destructive: oklch(0.56 0.19 26);
+  --border: oklch(0.865 0.022 80);
+  --input: oklch(0.865 0.022 80);
+  --ring: oklch(0.5 0.088 196);
+
+  --chart-1: oklch(0.7 0.15 39);
+  --chart-2: oklch(0.5 0.088 196);
+  --chart-3: oklch(0.8 0.09 80);
+  --chart-4: oklch(0.36 0.05 198);
+  --chart-5: oklch(0.58 0.15 35);
+
+  --radius: 0.75rem;
+
+  --sidebar: oklch(0.96 0.015 85);
+  --sidebar-foreground: oklch(0.235 0.022 50);
+  --sidebar-primary: oklch(0.36 0.05 198);
+  --sidebar-primary-foreground: oklch(0.99 0.006 86);
+  --sidebar-accent: oklch(0.93 0.026 85);
+  --sidebar-accent-foreground: oklch(0.235 0.022 50);
+  --sidebar-border: oklch(0.865 0.022 80);
+  --sidebar-ring: oklch(0.5 0.088 196);
+
+  /* ------------------------------ Marque M&H Store (noms utilisés dans les composants) */
+  --teal: oklch(0.5 0.088 196);           /* actions, liens, icônes */
+  --teal-vivid: oklch(0.56 0.11 194);      /* survols, accents vifs */
+  --teal-deep: oklch(0.32 0.05 198);       /* fonds pleins (footer, bandeaux) */
+  --coral: oklch(0.7 0.152 39);            /* CTA principal, badges */
+  --coral-deep: oklch(0.53 0.152 35);      /* texte sur fond corail clair */
+  --sand: oklch(0.93 0.026 85);            /* sections alternées */
+  --paper: oklch(0.976 0.01 86);           /* fond de page */
+  --paper-raised: oklch(0.992 0.006 86);   /* cartes, panneaux */
+  --ink: oklch(0.235 0.022 50);            /* texte principal */
+  --ink-soft: oklch(0.48 0.024 55);        /* texte secondaire */
+  --line: oklch(0.865 0.022 80);           /* bordures, séparateurs */
+  --success: oklch(0.62 0.13 155);
+  --error: oklch(0.56 0.19 26);
+
+  --shadow-lift: 0 20px 45px -20px oklch(0.235 0.022 50 / 0.35);
+  --shadow-soft: 0 8px 24px -12px oklch(0.235 0.022 50 / 0.18);
+}
+
+.dark {
+  --background: oklch(0.2 0.016 60);
+  --foreground: oklch(0.95 0.012 80);
+  --card: oklch(0.25 0.018 60);
+  --card-foreground: oklch(0.95 0.012 80);
+  --popover: oklch(0.25 0.018 60);
+  --popover-foreground: oklch(0.95 0.012 80);
+  --primary: oklch(0.66 0.09 196);
+  --primary-foreground: oklch(0.2 0.016 60);
+  --secondary: oklch(0.29 0.02 60);
+  --secondary-foreground: oklch(0.95 0.012 80);
+  --muted: oklch(0.29 0.02 60);
+  --muted-foreground: oklch(0.73 0.016 75);
+  --accent: oklch(0.33 0.05 42);
+  --accent-foreground: oklch(0.8 0.13 37);
+  --destructive: oklch(0.65 0.2 25);
+  --border: oklch(0.35 0.02 60);
+  --input: oklch(0.35 0.02 60 / 40%);
+  --ring: oklch(0.66 0.09 196);
+  --chart-1: oklch(0.72 0.13 39);
+  --chart-2: oklch(0.66 0.09 196);
+  --chart-3: oklch(0.8 0.08 80);
+  --chart-4: oklch(0.78 0.06 198);
+  --chart-5: oklch(0.77 0.13 37);
+  --sidebar: oklch(0.23 0.017 60);
+  --sidebar-foreground: oklch(0.95 0.012 80);
+  --sidebar-primary: oklch(0.78 0.06 198);
+  --sidebar-primary-foreground: oklch(0.2 0.016 60);
+  --sidebar-accent: oklch(0.29 0.02 60);
+  --sidebar-accent-foreground: oklch(0.95 0.012 80);
+  --sidebar-border: oklch(0.35 0.02 60);
+  --sidebar-ring: oklch(0.66 0.09 196);
+
+  --teal: oklch(0.66 0.09 196);
+  --teal-vivid: oklch(0.7 0.1 194);
+  --teal-deep: oklch(0.24 0.03 198);
+  --coral: oklch(0.72 0.14 39);
+  --coral-deep: oklch(0.8 0.13 37);
+  --sand: oklch(0.29 0.02 60);
+  --paper: oklch(0.2 0.016 60);
+  --paper-raised: oklch(0.25 0.018 60);
+  --ink: oklch(0.95 0.012 80);
+  --ink-soft: oklch(0.73 0.016 75);
+  --line: oklch(0.35 0.02 60);
+  --success: oklch(0.68 0.14 155);
+  --error: oklch(0.65 0.2 25);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-paper text-ink antialiased;
+  }
+  html {
+    @apply font-sans;
+    scroll-behavior: smooth;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* ------------------------------------------------------------------------
+   COMPOSANTS UTILITAIRES — la signature visuelle de M&H Store
+------------------------------------------------------------------------ */
+@layer components {
+  .eyebrow {
+    @apply inline-flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase;
+    letter-spacing: 0.14em;
+    color: var(--coral-deep);
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-full transition-all duration-200;
+    background: var(--teal);
+    color: var(--paper-raised);
+  }
+  .btn-primary:hover {
+    background: var(--teal-deep);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-soft);
+  }
+  .btn-primary:active {
+    transform: translateY(0);
+  }
+
+  .btn-coral {
+    @apply inline-flex items-center justify-center rounded-full transition-all duration-200;
+    background: var(--coral);
+    color: var(--paper-raised);
+  }
+  .btn-coral:hover {
+    background: var(--coral-deep);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-soft);
+  }
+  .btn-coral:active {
+    transform: translateY(0);
+  }
+  .btn-coral:disabled,
+  .btn-primary:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    transform: none;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center rounded-full border transition-colors duration-200;
+    border-color: var(--line);
+    color: var(--ink);
+  }
+  .btn-outline:hover {
+    background: var(--sand);
+    border-color: var(--teal);
+  }
+
+  .link-underline {
+    @apply relative;
+    background-image: linear-gradient(var(--teal-deep), var(--teal-deep));
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    background-size: 0% 1px;
+    transition: background-size 0.25s ease;
+  }
+  .link-underline:hover {
+    background-size: 100% 1px;
+  }
+
+  /* Trait "point de couture" — clin d'œil au textile tissé à la main */
+  .divider-stitch {
+    height: 1px;
+    background-image: repeating-linear-gradient(
+      to right,
+      var(--line) 0,
+      var(--line) 6px,
+      transparent 6px,
+      transparent 12px
+    );
+  }
+
+  .card-hairline {
+    @apply rounded-xl border transition-shadow duration-300;
+    border-color: var(--line);
+    background: var(--paper-raised);
+  }
+  .card-hairline:hover {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .bg-grain {
+    background-color: var(--sand);
+    position: relative;
+  }
+
+  .skip-link {
+    @apply fixed left-3 top-3 z-[100] -translate-y-20 rounded-full px-4 py-2 text-sm font-semibold transition-transform focus:translate-y-0;
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .field-label {
+    @apply mb-1.5 block text-xs font-medium;
+    color: var(--ink-soft);
+  }
+
+  .field-input {
+    @apply h-12 w-full rounded-lg border bg-transparent px-4 text-sm outline-none transition-colors;
+    border-color: var(--line);
+    background: var(--paper-raised);
+    color: var(--ink);
+  }
+  .field-input:focus {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--teal) 18%, transparent);
+  }
+  .field-input::placeholder {
+    color: var(--ink-soft);
+    opacity: 0.7;
+  }
+
+  /* En-tête — fond opaque et lisible en permanence (pas de transparence) */
+  .site-header {
+    background: var(--paper-raised);
+    border-bottom: 1px solid var(--line);
+  }
+  .site-header.is-scrolled {
+    box-shadow: var(--shadow-soft);
+  }
+}
