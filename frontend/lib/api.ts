@@ -228,10 +228,12 @@ export async function register(payload: {
   return response.token;
 }
 
-function authHeaders() {
+function authHeaders(): Record<string, string> {
   const token =
     typeof window === "undefined" ? null : localStorage.getItem("mh-token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  if (!token) return {};
+
+  return { Authorization: `Bearer ${token}` };
 }
 
 export async function getCurrentUser() {
