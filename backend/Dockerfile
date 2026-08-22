@@ -26,7 +26,8 @@ RUN composer install \
     --no-interaction \
     --prefer-dist \
     --optimize-autoloader \
-    --no-progress
+    --no-progress \
+    --no-scripts
 
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 
