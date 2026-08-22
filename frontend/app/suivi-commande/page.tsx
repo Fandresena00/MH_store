@@ -1,5 +1,5 @@
 import { OrdersTable } from "@/components/suivi-commande/orders-table";
-import { orders } from "@/lib/data";
+import { getOrder } from "@/lib/api";
 import { RiSearchLine } from "@remixicon/react";
 import type { Metadata } from "next";
 import { Suspense } from "react";
@@ -9,15 +9,17 @@ export const metadata: Metadata = {
   description: "Suivez l'état de vos commandes M&H Store en temps réel.",
 };
 
-export default function OrderTrackingPage({
+export default async function OrderTrackingPage({
   searchParams,
 }: {
   searchParams: { commande?: string; q?: string };
 }) {
-  const query = searchParams?.q?.trim().toLowerCase() ?? "";
-  const list = query
-    ? orders.filter((o) => o.id.toLowerCase().includes(query))
-    : orders;
+  const reference = searchParams?.commande ?? searchParams?.q;
+  const list = reference
+    ? await getOrder(reference)
+        .then((response) => [response.data])
+        .catch(() => [])
+    : [];
 
   return (
     <div className="mx-auto max-w-5xl px-5 py-10 lg:py-14">

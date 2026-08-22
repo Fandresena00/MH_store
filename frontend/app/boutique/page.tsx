@@ -1,7 +1,7 @@
 import { MobileFilters } from "@/components/boutique/mobile-filters";
 import { SortSelect } from "@/components/boutique/sort-select";
 import { ProductCard } from "@/components/product/product-card";
-import { categories, products } from "@/lib/data";
+import { getCategories, getProducts } from "@/lib/api";
 import { RiSearchLine } from "@remixicon/react";
 import type { Metadata } from "next";
 import { Suspense } from "react";
@@ -30,11 +30,15 @@ const PRICE_RANGES = [
   },
 ];
 
-export default function BoutiquePage({
+export default async function BoutiquePage({
   searchParams,
 }: {
   searchParams: { categorie?: string; q?: string; tri?: string; prix?: string };
 }) {
+  const [products, categories] = await Promise.all([
+    getProducts(),
+    getCategories(),
+  ]);
   const activeCategory = searchParams?.categorie;
   const query = searchParams?.q?.trim().toLowerCase() ?? "";
   const activePrice = searchParams?.prix;

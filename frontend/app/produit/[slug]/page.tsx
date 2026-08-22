@@ -1,15 +1,20 @@
+import { ProductCard } from "@/components/product/product-card";
+import { ProductDetailClient } from "@/components/product/product-detail-client";
+import { getProduct, getProducts } from "@/lib/api";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { products } from "@/lib/data";
-import { ProductDetailClient } from "@/components/product/product-detail-client";
-import { ProductCard } from "@/components/product/product-card";
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const products = await getProducts();
   return products.map((p) => ({ slug: p.slug }));
 }
 
-export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
-  const product = products.find((p) => p.slug === params.slug);
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}): Promise<Metadata> {
+  const product = await getProduct(params.slug);
   if (!product) return { title: "Produit introuvable" };
   return {
     title: product.name,
@@ -18,11 +23,18 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
   };
 }
 
-export default function ProductPage({ params }: { params: { slug: string } }) {
-  const product = products.find((p) => p.slug === params.slug);
+export default async function ProductPage({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  const product = await getProduct(params.slug);
   if (!product) return notFound();
 
-  const related = products.filter((p) => p.category === product.category && p.slug !== product.slug).slice(0, 4);
+  const products = await getProducts();
+  const related = products
+    .filter((p) => p.category === product.category && p.slug !== product.slug)
+    .slice(0, 4);
 
   return (
     <>

@@ -1,0 +1,42 @@
+{% extends 'admin/base.html.twig' %}
+{% block header_title %}Utilisateurs{% endblock %}
+
+{% block admin_body %}
+    <p class="text-soft mb-6">{{ users|length }} compte(s)</p>
+
+    <div class="table-card">
+        <table>
+            <thead><tr><th>Nom</th><th>Email</th><th>Rôle</th><th>Inscrit le</th><th></th></tr></thead>
+            <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td>{{ user.fullName }}</td>
+                        <td class="text-soft">{{ user.email }}</td>
+                        <td>
+                            {% if 'ROLE_SUPER_ADMIN' in user.roles %}
+                                <span class="badge-role">Super admin</span>
+                            {% elseif 'ROLE_ADMIN' in user.roles %}
+                                <span class="badge-role">Administrateur</span>
+                            {% else %}
+                                <span class="text-soft text-sm">Client</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-soft">{{ user.createdAt|date('d/m/Y') }}</td>
+                        <td class="text-right">
+                            {% if user != app.user and 'ROLE_SUPER_ADMIN' not in user.roles %}
+                                <form action="{{ path('admin_user_toggle_admin', {id: user.id}) }}" method="post" style="display:inline;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('toggle-admin-' ~ user.id) }}">
+                                    <button type="submit" class="btn-link">
+                                        {{ 'ROLE_ADMIN' in user.roles ? 'Retirer admin' : 'Nommer admin' }}
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span class="text-soft text-sm">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

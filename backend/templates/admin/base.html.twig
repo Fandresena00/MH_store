@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Admin — M&H Store{% endblock %}</title>
+    <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
+</head>
+<body>
+
+<aside class="admin-sidebar">
+    <div class="admin-logo">
+        <img src="{{ asset('images/logo-icon.png') }}" alt="">
+        <span>M&amp;H <span class="accent">Admin</span></span>
+    </div>
+
+    <nav class="admin-nav">
+        {% set current = app.request.attributes.get('_route') %}
+        {% set links = [
+            {prefix: 'admin_dashboard', route: 'admin_dashboard', label: 'Tableau de bord'},
+            {prefix: 'admin_product', route: 'admin_product_index', label: 'Produits'},
+            {prefix: 'admin_category', route: 'admin_category_index', label: 'Catégories'},
+            {prefix: 'admin_order', route: 'admin_order_index', label: 'Commandes'},
+            {prefix: 'admin_blog', route: 'admin_blog_index', label: 'Journal'},
+            {prefix: 'admin_user', route: 'admin_user_index', label: 'Utilisateurs'},
+        ] %}
+        {% for link in links %}
+            <a href="{{ path(link.route) }}" class="{{ current starts with link.prefix ? 'is-active' : '' }}">{{ link.label }}</a>
+        {% endfor %}
+    </nav>
+
+    <div class="admin-sidebar-footer">
+        <a href="{{ frontend_url }}" class="back">← Retour au site</a>
+        <a href="{{ path('admin_logout') }}" class="logout">Déconnexion</a>
+    </div>
+</aside>
+
+<div class="admin-main">
+    <header class="admin-topbar">
+        <h1>{% block header_title %}Tableau de bord{% endblock %}</h1>
+        <div class="user-info">
+            <span class="user-email">{{ app.user ? app.user.email : '' }}</span>
+            <span class="badge-role">Admin</span>
+        </div>
+    </header>
+
+    <main class="admin-content">
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="flash flash-{{ label }}">{{ message }}</div>
+            {% endfor %}
+        {% endfor %}
+
+        {% block admin_body %}{% endblock %}
+    </main>
+</div>
+
+</body>
+</html>

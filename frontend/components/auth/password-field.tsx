@@ -1,9 +1,17 @@
 "use client";
 
-import { useId, useState } from "react";
 import { RiEyeLine, RiEyeOffLine } from "@remixicon/react";
+import { useId, useState } from "react";
 
-export function PasswordField({ label = "Mot de passe", placeholder = "••••••••" }: { label?: string; placeholder?: string }) {
+export function PasswordField({
+  label = "Mot de passe",
+  placeholder = "••••••••",
+  name = "password",
+}: {
+  label?: string;
+  placeholder?: string;
+  name?: string;
+}) {
   const [visible, setVisible] = useState(false);
   const id = useId();
 
@@ -15,6 +23,7 @@ export function PasswordField({ label = "Mot de passe", placeholder = "•••
       <div className="relative">
         <input
           id={id}
+          name={name}
           type={visible ? "text" : "password"}
           placeholder={placeholder}
           className="field-input pr-11"
@@ -25,7 +34,9 @@ export function PasswordField({ label = "Mot de passe", placeholder = "•••
           onClick={() => setVisible((v) => !v)}
           className="absolute right-0 top-0 flex h-12 w-11 items-center justify-center"
           style={{ color: "var(--ink-soft)" }}
-          aria-label={visible ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+          aria-label={
+            visible ? "Masquer le mot de passe" : "Afficher le mot de passe"
+          }
         >
           {visible ? <RiEyeOffLine size={17} /> : <RiEyeLine size={17} />}
         </button>

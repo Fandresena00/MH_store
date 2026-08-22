@@ -1,0 +1,42 @@
+{% extends 'admin/base.html.twig' %}
+{% block header_title %}{{ product.id ? 'Modifier le produit' : 'Nouveau produit' }}{% endblock %}
+
+{% block admin_body %}
+    <div class="max-w-2xl">
+        {{ form_start(form) }}
+            <div class="card">
+                <div class="form-grid-2">
+                    <div class="field-group">{{ form_label(form.name) }}{{ form_widget(form.name) }}{{ form_errors(form.name) }}</div>
+                    <div class="field-group">{{ form_label(form.slug) }}{{ form_widget(form.slug) }}{{ form_errors(form.slug) }}</div>
+                </div>
+                <div class="form-grid-2">
+                    <div class="field-group">{{ form_label(form.category) }}{{ form_widget(form.category) }}</div>
+                    <div class="field-group">{{ form_label(form.badge) }}{{ form_widget(form.badge) }}</div>
+                </div>
+                <div class="form-grid-3">
+                    <div class="field-group">{{ form_label(form.price) }}{{ form_widget(form.price) }}{{ form_errors(form.price) }}</div>
+                    <div class="field-group">{{ form_label(form.compareAtPrice) }}{{ form_widget(form.compareAtPrice) }}</div>
+                    <div class="field-group">{{ form_label(form.stock) }}{{ form_widget(form.stock) }}</div>
+                </div>
+                <div class="form-grid-2">
+                    <div class="field-group">{{ form_label(form.materials) }}{{ form_widget(form.materials) }}</div>
+                    <div class="field-group">{{ form_label(form.origin) }}{{ form_widget(form.origin) }}</div>
+                </div>
+                <div class="form-grid-2">
+                    <div class="field-group">{{ form_label(form.colorFrom) }}{{ form_widget(form.colorFrom) }}</div>
+                    <div class="field-group">{{ form_label(form.colorTo) }}{{ form_widget(form.colorTo) }}</div>
+                </div>
+                <div class="form-grid-2">
+                    <div class="field-group">{{ form_label(form.rating) }}{{ form_widget(form.rating) }}</div>
+                    <div class="field-group">{{ form_label(form.reviewsCount) }}{{ form_widget(form.reviewsCount) }}</div>
+                </div>
+                <div class="field-group">{{ form_label(form.description) }}{{ form_widget(form.description) }}</div>
+            </div>
+
+            <div class="mt-6 flex items-center gap-3">
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+                <a href="{{ path('admin_product_index') }}" class="btn-link text-sm">Annuler</a>
+            </div>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

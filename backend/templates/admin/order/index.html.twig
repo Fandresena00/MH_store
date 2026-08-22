@@ -1,0 +1,33 @@
+{% extends 'admin/base.html.twig' %}
+{% block header_title %}Commandes{% endblock %}
+
+{% block admin_body %}
+    <div class="mb-6">
+        <a href="{{ path('admin_order_index') }}" class="pill-filter {{ activeStatus is empty ? 'is-active' : '' }}">Toutes</a>
+        {% for key, label in statuses %}
+            <a href="{{ path('admin_order_index', {status: key}) }}" class="pill-filter {{ activeStatus == key ? 'is-active' : '' }}">{{ label }}</a>
+        {% endfor %}
+    </div>
+
+    <div class="table-card">
+        <table>
+            <thead><tr><th>Référence</th><th>Client</th><th>Date</th><th>Statut</th><th>Paiement</th><th class="text-right">Total</th></tr></thead>
+            <tbody>
+                {% for order in orders %}
+                    <tr class="is-clickable" onclick="window.location='{{ path('admin_order_show', {id: order.id}) }}'">
+                        <td>{{ order.reference }}</td>
+                        <td class="text-soft">{{ order.user ? order.user.fullName : (order.guestEmail ?: 'Invité') }}</td>
+                        <td class="text-soft">{{ order.createdAt|date('d/m/Y') }}</td>
+                        <td>{{ statuses[order.status] ?? order.status }}</td>
+                        <td class="{{ order.paymentStatus == 'success' ? 'text-success' : (order.paymentStatus == 'failed' ? 'text-error' : 'text-soft') }}">
+                            {{ order.paymentStatus == 'success' ? '✓ Payé' : (order.paymentStatus == 'failed' ? '✕ Échoué' : '⏳ En attente') }}
+                        </td>
+                        <td class="text-right">{{ order.total|number_format(0, ',', ' ') }} Ar</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6" class="text-center text-soft" style="padding: 24px;">Aucune commande.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

@@ -1,39 +1,72 @@
 security:
-    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
 
-    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
-        users_in_memory: { memory: null }
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
 
     firewalls:
         dev:
-            # Ensure dev tools and static assets are always allowed
-            pattern: ^/(_profiler|_wdt|assets|build)/
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
-        main:
+
+        # Connexion JSON de l'API — Lexik répond directement {"token": "..."}
+        # sur POST /api/auth/login. Doit être déclaré AVANT le firewall "api"
+        # ci-dessous puisque son pattern est un sous-ensemble de ^/api.
+        api_login:
+            pattern: ^/api/auth/login
+            stateless: true
+            json_login:
+                check_path: /api/auth/login
+                username_path: email
+                password_path: password
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+
+        # Toutes les autres routes /api/* — authentification par JWT (Bearer token),
+        # stateless (aucune session ni cookie), consommé par le frontend Next.js.
+        api:
+            pattern: ^/api
+            stateless: true
+            entry_point: jwt
+            jwt: ~
+
+        # Espace admin (Twig, session) — formulaire de connexion classique.
+        admin:
             lazy: true
-            provider: users_in_memory
+            provider: app_user_provider
+            custom_authenticators:
+                - App\Security\AppAuthenticator
+            logout:
+                path: admin_logout
+                target: admin_login
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800
+                path: /admin
 
-            # Activate different ways to authenticate:
-            # https://symfony.com/doc/current/security.html#the-firewall
+    role_hierarchy:
+        ROLE_ADMIN: ROLE_USER
+        ROLE_SUPER_ADMIN: ROLE_ADMIN
 
-            # https://symfony.com/doc/current/security/impersonating_user.html
-            # switch_user: true
-
-    # Note: Only the *first* matching rule is applied
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
-
-when@test:
-    security:
-        password_hashers:
-            # Password hashers are resource-intensive by design to ensure security.
-            # In tests, it's safe to reduce their cost to improve performance.
-            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
-                algorithm: auto
-                cost: 4 # Lowest possible value for bcrypt
-                time_cost: 3 # Lowest possible value for argon
-                memory_cost: 10 # Lowest possible value for argon
+        # --- API publique (lecture) ---
+        - { path: ^/api/auth/(register|login), roles: PUBLIC_ACCESS }
+        - { path: ^/api/products, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/categories, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/blog, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/orders/, roles: PUBLIC_ACCESS, methods: [GET] } # suivi par référence, sans compte
+        - { path: ^/api/checkout, roles: PUBLIC_ACCESS, methods: [POST] } # commande invité autorisée
+        - { path: ^/api/contact, roles: PUBLIC_ACCESS, methods: [POST] }
+        # --- API authentifiée ---
+        - { path: ^/api/account, roles: ROLE_USER }
+        - { path: ^/api/me, roles: ROLE_USER }
+        - { path: ^/api, roles: ROLE_USER } # filet de sécurité : tout endroit /api/* non listé ci-dessus exige une connexion
+        # --- Webhook PAPI (server-to-server, jamais depuis le navigateur) ---
+        - { path: ^/paiement/papi/notification, roles: PUBLIC_ACCESS }
+        # --- Admin (Twig) ---
+        - { path: ^/admin/connexion, roles: PUBLIC_ACCESS }
+        - { path: ^/admin, roles: ROLE_ADMIN }

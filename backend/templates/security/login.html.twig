@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Connexion admin — M&H Store</title>
+    <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
+</head>
+<body class="login-page">
+    <div class="login-box">
+        <div class="admin-logo mb-6">
+            <img src="{{ asset('images/logo-icon.png') }}" alt="">
+            <span>M&amp;H <span class="accent">Admin</span></span>
+        </div>
+
+        <p class="eyebrow">Espace administrateur</p>
+        <h1>Connexion</h1>
+        <p class="subtitle">Réservé aux comptes administrateurs de M&H Store.</p>
+
+        {% if error %}
+            <div class="flash flash-error mt-6">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+        {% endif %}
+
+        <form method="post" class="mt-6">
+            <div class="field-group">
+                <label for="email">Adresse email</label>
+                <input id="email" type="email" name="email" value="{{ last_username }}" required autofocus autocomplete="email">
+            </div>
+            <div class="field-group">
+                <label for="password">Mot de passe</label>
+                <input id="password" type="password" name="password" required autocomplete="current-password">
+            </div>
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 8px;">Se connecter</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<?php
+
+namespace App\Security;
+
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Http\Authenticator\AbstractLoginFormAuthenticator;
+use Symfony\Component\Security\Http\Authenticator\Passport\Badge\CsrfTokenBadge;
+use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge as BadgeUserBadge;
+use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordCredentials;
+use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
+use Symfony\Component\Security\Http\Util\TargetPathTrait;
+
+/**
+ * Authenticator du formulaire de connexion admin (Twig, session). Ne
+ * concerne QUE l'espace /admin — l'authentification de l'API (Next.js)
+ * passe par Lexik JWT (json_login sur /api/auth/login), pas par cette classe.
+ */
+class AppAuthenticator extends AbstractLoginFormAuthenticator
+{
+    use TargetPathTrait;
+
+    public const LOGIN_ROUTE = 'admin_login';
+
+    public function __construct(private readonly UrlGeneratorInterface $urlGenerator)
+    {
+    }
+
+    public function authenticate(Request $request): Passport
+    {
+        $email = $request->request->get('email', '');
+        $request->getSession()->set('_security.last_email', $email);
+
+        return new Passport(
+            new BadgeUserBadge($email),
+            new PasswordCredentials($request->request->get('password', '')),
+            [new CsrfTokenBadge('authenticate', $request->request->get('_csrf_token'))]
+        );
+    }
+
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
+    {
+        if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
+            return new RedirectResponse($targetPath);
+        }
+
+        return new RedirectResponse($this->urlGenerator->generate('admin_dashboard'));
+    }
+
+    protected function getLoginUrl(Request $request): string
+    {
+        return $this->urlGenerator->generate(self::LOGIN_ROUTE);
+    }
+}

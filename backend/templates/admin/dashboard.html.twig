@@ -1,0 +1,47 @@
+{% extends 'admin/base.html.twig' %}
+{% block header_title %}Tableau de bord{% endblock %}
+
+{% block admin_body %}
+    <div class="stat-grid">
+        <div class="card stat-card">
+            <p class="label">Chiffre d'affaires</p>
+            <p class="value">{{ revenue|number_format(0, ',', ' ') }} Ar</p>
+        </div>
+        <div class="card stat-card">
+            <p class="label">Commandes</p>
+            <p class="value">{{ orderCount }}</p>
+        </div>
+        <div class="card stat-card">
+            <p class="label">Produits</p>
+            <p class="value">{{ productCount }}</p>
+        </div>
+        <div class="card stat-card">
+            <p class="label">Utilisateurs</p>
+            <p class="value">{{ userCount }}</p>
+        </div>
+    </div>
+
+    <div class="table-card">
+        <div class="flex items-center justify-between" style="padding: 16px 16px 0;">
+            <h2 style="font-size: 1.05rem;">Dernières commandes</h2>
+            <a href="{{ path('admin_order_index') }}" class="btn-link text-sm">Tout voir</a>
+        </div>
+        <table>
+            <thead>
+                <tr><th>Référence</th><th>Date</th><th>Statut</th><th class="text-right">Total</th></tr>
+            </thead>
+            <tbody>
+                {% for order in recentOrders %}
+                    <tr class="is-clickable" onclick="window.location='{{ path('admin_order_show', {id: order.id}) }}'">
+                        <td><a href="{{ path('admin_order_show', {id: order.id}) }}" class="btn-link">{{ order.reference }}</a></td>
+                        <td class="text-soft">{{ order.createdAt|date('d/m/Y') }}</td>
+                        <td>{{ order.status }}</td>
+                        <td class="text-right">{{ order.total|number_format(0, ',', ' ') }} Ar</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="4" class="text-center text-soft" style="padding: 24px;">Aucune commande pour le moment.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

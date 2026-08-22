@@ -1,10 +1,21 @@
-import Link from "next/link";
-import type { Metadata } from "next";
-import { RiArrowRightLine, RiLeafLine, RiHandCoinLine, RiTruckLine } from "@remixicon/react";
-import { products, categories, blogPosts, heroImages } from "@/lib/data";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductMedia } from "@/components/product/product-media";
+import {
+  getBlogPosts,
+  getCategories,
+  getFeaturedProducts,
+  getProducts,
+} from "@/lib/api";
+import { heroImages } from "@/lib/data";
 import { formatDateLong } from "@/lib/utils";
+import {
+  RiArrowRightLine,
+  RiHandCoinLine,
+  RiLeafLine,
+  RiTruckLine,
+} from "@remixicon/react";
+import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Accueil",
@@ -12,14 +23,24 @@ export const metadata: Metadata = {
     "Découvrez la boutique en ligne M&H Store : raphia d'Ambalavao, bois d'Ambositra, teintures végétales d'Antsirabe — des objets artisanaux malgaches choisis pour leur matière et leur histoire.",
 };
 
-export default function HomePage() {
-  const featured = products.filter((p) => p.badge).slice(0, 4);
-  const bestsellers = [...products].sort((a, b) => b.rating - a.rating).slice(0, 4);
+export default async function HomePage() {
+  const [products, categories, blogPosts, featured] = await Promise.all([
+    getProducts(),
+    getCategories(),
+    getBlogPosts(),
+    getFeaturedProducts(),
+  ]);
+  const bestsellers = [...products]
+    .sort((a, b) => b.rating - a.rating)
+    .slice(0, 4);
 
   return (
     <>
       {/* ---------------------------------------------------------------- HERO */}
-      <section className="relative overflow-hidden" style={{ background: "var(--sand)" }}>
+      <section
+        className="relative overflow-hidden"
+        style={{ background: "var(--sand)" }}
+      >
         <div className="mx-auto grid max-w-[1400px] grid-cols-1 items-center gap-10 px-5 py-16 lg:grid-cols-2 lg:gap-16 lg:px-10 lg:py-24">
           <div className="order-2 lg:order-1">
             <p className="eyebrow">Fait main à Madagascar</p>
@@ -31,15 +52,25 @@ export default function HomePage() {
               </span>
               , pas une usine.
             </h1>
-            <p className="mt-6 max-w-md text-[1.05rem] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
-              Raphia d'Ambalavao, bois d'Ambositra, teintures végétales d'Antsirabe : chaque pièce M&H Store
-              est choisie pour sa matière, son atelier et l'histoire qu'elle raconte chez vous.
+            <p
+              className="mt-6 max-w-md text-[1.05rem] leading-relaxed"
+              style={{ color: "var(--ink-soft)" }}
+            >
+              Raphia d'Ambalavao, bois d'Ambositra, teintures végétales
+              d'Antsirabe : chaque pièce M&H Store est choisie pour sa matière,
+              son atelier et l'histoire qu'elle raconte chez vous.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-4">
-              <Link href="/boutique" className="btn-primary flex items-center gap-2 px-7 py-3.5 text-sm font-semibold">
+              <Link
+                href="/boutique"
+                className="btn-primary flex items-center gap-2 px-7 py-3.5 text-sm font-semibold"
+              >
                 Découvrir la boutique <RiArrowRightLine size={16} />
               </Link>
-              <Link href="/a-propos" className="link-underline text-sm font-medium">
+              <Link
+                href="/a-propos"
+                className="link-underline text-sm font-medium"
+              >
                 Notre histoire
               </Link>
             </div>
@@ -49,7 +80,11 @@ export default function HomePage() {
                 { icon: RiHandCoinLine, label: "Commerce équitable" },
                 { icon: RiTruckLine, label: "Expédié sous 48h" },
               ].map(({ icon: Icon, label }) => (
-                <div key={label} className="flex items-center gap-2 text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
+                <div
+                  key={label}
+                  className="flex items-center gap-2 text-xs font-medium"
+                  style={{ color: "var(--ink-soft)" }}
+                >
                   <Icon size={16} style={{ color: "var(--teal)" }} />
                   {label}
                 </div>
@@ -64,8 +99,16 @@ export default function HomePage() {
               priority
               className="col-span-2 aspect-[16/10] rounded-xl shadow-[var(--shadow-lift)] sm:aspect-[16/9]"
             />
-            <ProductMedia src={heroImages.secondary} alt="Panier tressé en raphia" className="aspect-square rounded-xl" />
-            <ProductMedia src={heroImages.tertiary} alt="Cabas en cuir et raphia" className="aspect-square rounded-xl" />
+            <ProductMedia
+              src={heroImages.secondary}
+              alt="Panier tressé en raphia"
+              className="aspect-square rounded-xl"
+            />
+            <ProductMedia
+              src={heroImages.tertiary}
+              alt="Cabas en cuir et raphia"
+              className="aspect-square rounded-xl"
+            />
           </div>
         </div>
       </section>
@@ -75,7 +118,9 @@ export default function HomePage() {
         <div className="mb-10 flex items-end justify-between">
           <div>
             <p className="eyebrow">Parcourir</p>
-            <h2 className="mt-2 font-display text-3xl">Trois univers, une même exigence</h2>
+            <h2 className="mt-2 font-display text-3xl">
+              Trois univers, une même exigence
+            </h2>
           </div>
         </div>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
@@ -93,7 +138,9 @@ export default function HomePage() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-transparent" />
               <div className="relative text-white">
                 <h3 className="font-display text-2xl">{cat.name}</h3>
-                <p className="link-underline mt-1 text-sm opacity-90">{cat.count} pièces</p>
+                <p className="link-underline mt-1 text-sm opacity-90">
+                  {cat.count} pièces
+                </p>
               </div>
             </Link>
           ))}
@@ -106,9 +153,14 @@ export default function HomePage() {
           <div className="mb-10 flex items-end justify-between">
             <div>
               <p className="eyebrow">Sélection</p>
-              <h2 className="mt-2 font-display text-3xl">Nouveautés &amp; éditions limitées</h2>
+              <h2 className="mt-2 font-display text-3xl">
+                Nouveautés &amp; éditions limitées
+              </h2>
             </div>
-            <Link href="/boutique?tri=nouveautes" className="link-underline hidden text-sm font-medium sm:block">
+            <Link
+              href="/boutique?tri=nouveautes"
+              className="link-underline hidden text-sm font-medium sm:block"
+            >
               Voir les nouveautés
             </Link>
           </div>
@@ -121,7 +173,9 @@ export default function HomePage() {
       </section>
 
       {/* ----------------------------------------------------------------- STORY */}
-      <section style={{ background: "var(--teal-deep)", color: "var(--paper)" }}>
+      <section
+        style={{ background: "var(--teal-deep)", color: "var(--paper)" }}
+      >
         <div className="mx-auto grid max-w-[1400px] grid-cols-1 items-center gap-10 px-5 py-20 lg:grid-cols-2 lg:px-10">
           <ProductMedia
             src={heroImages.story}
@@ -133,14 +187,19 @@ export default function HomePage() {
               Notre engagement
             </p>
             <h2 className="mt-3 font-display text-3xl leading-tight sm:text-4xl">
-              Chaque achat rémunère l'atelier au juste prix, pas l'intermédiaire.
+              Chaque achat rémunère l'atelier au juste prix, pas
+              l'intermédiaire.
             </h2>
             <p className="mt-5 max-w-md text-sm leading-relaxed opacity-85">
-              M&H Store travaille en direct avec neuf ateliers à travers Madagascar. Pas de sous-traitance
-              en cascade : nous connaissons chaque tisserande, chaque sculpteur, et nous les payons avant
-              même la mise en vente.
+              M&H Store travaille en direct avec neuf ateliers à travers
+              Madagascar. Pas de sous-traitance en cascade : nous connaissons
+              chaque tisserande, chaque sculpteur, et nous les payons avant même
+              la mise en vente.
             </p>
-            <Link href="/a-propos" className="mt-7 inline-flex items-center gap-2 link-underline text-sm font-semibold">
+            <Link
+              href="/a-propos"
+              className="mt-7 inline-flex items-center gap-2 link-underline text-sm font-semibold"
+            >
               Rencontrer les ateliers <RiArrowRightLine size={16} />
             </Link>
           </div>
@@ -154,7 +213,10 @@ export default function HomePage() {
             <p className="eyebrow">Les préférés</p>
             <h2 className="mt-2 font-display text-3xl">Les incontournables</h2>
           </div>
-          <Link href="/boutique?tri=populaire" className="link-underline hidden text-sm font-medium sm:block">
+          <Link
+            href="/boutique?tri=populaire"
+            className="link-underline hidden text-sm font-medium sm:block"
+          >
             Voir les incontournables
           </Link>
         </div>
@@ -166,24 +228,45 @@ export default function HomePage() {
       </section>
 
       {/* ------------------------------------------------------------------ JOURNAL */}
-      <section className="border-t" style={{ borderColor: "var(--line)", background: "var(--sand)" }}>
+      <section
+        className="border-t"
+        style={{ borderColor: "var(--line)", background: "var(--sand)" }}
+      >
         <div className="mx-auto max-w-[1400px] px-5 py-16 lg:px-10 lg:py-20">
           <div className="mb-10 flex items-end justify-between">
             <div>
               <p className="eyebrow">Le journal</p>
-              <h2 className="mt-2 font-display text-3xl">Matières, gestes et ateliers</h2>
+              <h2 className="mt-2 font-display text-3xl">
+                Matières, gestes et ateliers
+              </h2>
             </div>
-            <Link href="/blog" className="link-underline hidden text-sm font-medium sm:block">
+            <Link
+              href="/blog"
+              className="link-underline hidden text-sm font-medium sm:block"
+            >
               Tous les articles
             </Link>
           </div>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {blogPosts.map((post) => (
-              <Link key={post.slug} href={`/blog/${post.slug}`} className="group">
-                <ProductMedia src={post.cover} alt={post.title} className="aspect-[4/3] rounded-xl" />
+              <Link
+                key={post.slug}
+                href={`/blog/${post.slug}`}
+                className="group"
+              >
+                <ProductMedia
+                  src={post.cover}
+                  alt={post.title}
+                  className="aspect-[4/3] rounded-xl"
+                />
                 <p className="mt-4 eyebrow">{post.category}</p>
-                <h3 className="link-underline mt-1.5 font-display text-lg leading-snug">{post.title}</h3>
-                <p className="mt-1 text-xs" style={{ color: "var(--ink-soft)" }}>
+                <h3 className="link-underline mt-1.5 font-display text-lg leading-snug">
+                  {post.title}
+                </h3>
+                <p
+                  className="mt-1 text-xs"
+                  style={{ color: "var(--ink-soft)" }}
+                >
                   {formatDateLong(post.date)}
                 </p>
               </Link>
@@ -195,9 +278,15 @@ export default function HomePage() {
       {/* --------------------------------------------------------------- NEWSLETTER */}
       <section className="border-t" style={{ borderColor: "var(--line)" }}>
         <div className="mx-auto max-w-[1400px] px-5 py-16 text-center lg:px-10">
-          <h2 className="font-display text-3xl">Un objet, une histoire, chaque mois</h2>
-          <p className="mx-auto mt-3 max-w-md text-sm" style={{ color: "var(--ink-soft)" }}>
-            Recevez en avant-première nos nouvelles collections et les portraits d'ateliers.
+          <h2 className="font-display text-3xl">
+            Un objet, une histoire, chaque mois
+          </h2>
+          <p
+            className="mx-auto mt-3 max-w-md text-sm"
+            style={{ color: "var(--ink-soft)" }}
+          >
+            Recevez en avant-première nos nouvelles collections et les portraits
+            d'ateliers.
           </p>
           <form className="mx-auto mt-6 flex max-w-md gap-2">
             <input
@@ -206,7 +295,10 @@ export default function HomePage() {
               placeholder="Votre adresse email"
               className="field-input h-12 flex-1 rounded-full"
             />
-            <button type="submit" className="btn-primary px-6 text-sm font-semibold">
+            <button
+              type="submit"
+              className="btn-primary px-6 text-sm font-semibold"
+            >
               S'inscrire
             </button>
           </form>

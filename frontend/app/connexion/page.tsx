@@ -1,41 +1,79 @@
-import Link from "next/link";
-import type { Metadata } from "next";
-import { RiArrowRightLine } from "@remixicon/react";
+"use client";
+
 import { AuthShell } from "@/components/auth/auth-shell";
 import { PasswordField } from "@/components/auth/password-field";
-
-export const metadata: Metadata = { title: "Connexion", robots: { index: false } };
+import { login } from "@/lib/api";
+import { RiArrowRightLine } from "@remixicon/react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import type { FormEvent } from "react";
+import { useState } from "react";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [error, setError] = useState("");
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    try {
+      await login(String(form.get("email")), String(form.get("password")));
+      router.push("/compte");
+    } catch {
+      setError("Email ou mot de passe incorrect.");
+    }
+  }
   return (
     <AuthShell
       eyebrow="Espace client"
       title="Bon retour parmi nous"
       subtitle="Connectez-vous pour suivre vos commandes et retrouver vos favoris."
     >
-      <form className="space-y-4">
+      <form className="space-y-4" onSubmit={handleSubmit}>
         <div>
-          <label htmlFor="email" className="field-label">Adresse email</label>
-          <input id="email" type="email" placeholder="vous@email.com" className="field-input" autoComplete="email" />
+          <label htmlFor="email" className="field-label">
+            Adresse email
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="vous@email.com"
+            className="field-input"
+            autoComplete="email"
+            required
+          />
         </div>
-        <PasswordField />
+        <PasswordField name="password" />
+        {error && <p className="text-sm text-error">{error}</p>}
         <div className="flex items-center justify-between text-sm">
-          <label className="flex items-center gap-2" style={{ color: "var(--ink-soft)" }}>
+          <label
+            className="flex items-center gap-2"
+            style={{ color: "var(--ink-soft)" }}
+          >
             <input type="checkbox" className="accent-[var(--teal)]" />
             Se souvenir de moi
           </label>
-          <button type="button" className="link-underline font-medium" style={{ color: "var(--teal-deep)" }}>
+          <button
+            type="button"
+            className="link-underline font-medium"
+            style={{ color: "var(--teal-deep)" }}
+          >
             Mot de passe oublié ?
           </button>
         </div>
-        <button type="submit" className="btn-coral flex w-full items-center justify-center gap-2 py-3.5 text-sm font-semibold">
+        <button
+          type="submit"
+          className="btn-coral flex w-full items-center justify-center gap-2 py-3.5 text-sm font-semibold"
+        >
           Se connecter <RiArrowRightLine size={16} />
         </button>
       </form>
 
       <div className="my-6 flex items-center gap-3">
         <div className="h-px flex-1" style={{ background: "var(--line)" }} />
-        <span className="text-xs" style={{ color: "var(--ink-soft)" }}>ou</span>
+        <span className="text-xs" style={{ color: "var(--ink-soft)" }}>
+          ou
+        </span>
         <div className="h-px flex-1" style={{ background: "var(--line)" }} />
       </div>
 
@@ -43,9 +81,16 @@ export default function LoginPage() {
         Continuer avec Google
       </button>
 
-      <p className="mt-8 text-center text-sm" style={{ color: "var(--ink-soft)" }}>
+      <p
+        className="mt-8 text-center text-sm"
+        style={{ color: "var(--ink-soft)" }}
+      >
         Pas encore de compte ?{" "}
-        <Link href="/inscription" className="link-underline font-semibold" style={{ color: "var(--teal-deep)" }}>
+        <Link
+          href="/inscription"
+          className="link-underline font-semibold"
+          style={{ color: "var(--teal-deep)" }}
+        >
           Créer un compte
         </Link>
       </p>

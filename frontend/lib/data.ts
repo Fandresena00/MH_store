@@ -1,4 +1,5 @@
 export type Product = {
+  id?: number;
   slug: string;
   name: string;
   category: string;
@@ -174,7 +175,8 @@ export const heroImages = {
 export const blogPosts = [
   {
     slug: "artisanat-ambalavao-raphia",
-    title: "À Ambalavao, le geste du tressage se transmet encore de mère en fille",
+    title:
+      "À Ambalavao, le geste du tressage se transmet encore de mère en fille",
     excerpt:
       "Reportage dans les ateliers d'Ambalavao, où la vannerie de raphia reste un savoir-faire vivant, loin des productions standardisées.",
     date: "2026-06-02",
@@ -304,7 +306,11 @@ export const orders: Order[] = [
     lines: [{ productSlug: "coussin-brode-zebu", quantity: 1 }],
     timeline: [
       { label: "Commande confirmée", done: true, date: "14 mai 2026" },
-      { label: "Annulée à la demande du client", done: true, date: "15 mai 2026" },
+      {
+        label: "Annulée à la demande du client",
+        done: true,
+        date: "15 mai 2026",
+      },
     ],
   },
 ];
