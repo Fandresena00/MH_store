@@ -1,9 +1,8 @@
 "use client";
 
-import { ProductMedia } from "@/components/product/product-media";
 import { Badge } from "@/components/ui/badge";
 import { getAccountOrders, getCurrentUser } from "@/lib/api";
-import { orders, products } from "@/lib/data";
+import type { Order } from "@/lib/data";
 import { formatAr, formatDateShort } from "@/lib/utils";
 import {
   RiHeartLine,
@@ -38,7 +37,7 @@ export function AccountClient() {
     email: string;
     createdAt: string;
   } | null>(null);
-  const [accountOrders, setAccountOrders] = useState<typeof orders>([]);
+  const [accountOrders, setAccountOrders] = useState<Order[]>([]);
 
   useEffect(() => {
     Promise.all([getCurrentUser(), getAccountOrders()])
@@ -50,7 +49,7 @@ export function AccountClient() {
   }, []);
 
   return (
-    <div className="mx-auto max-w-[1200px] px-5 py-10 lg:px-10 lg:py-14">
+    <div className="mx-auto max-w-300 px-5 py-10 lg:px-10 lg:py-14">
       <div className="flex items-center gap-4">
         <div
           className="flex h-14 w-14 items-center justify-center rounded-full text-lg font-semibold text-white"
@@ -167,28 +166,9 @@ export function AccountClient() {
             <div>
               <h2 className="mb-6 font-display text-xl">Mes favoris</h2>
               <div className="grid grid-cols-2 gap-5 sm:grid-cols-3">
-                {products.slice(0, 3).map((p) => (
-                  <Link
-                    key={p.slug}
-                    href={`/produit/${p.slug}`}
-                    className="card-hairline overflow-hidden"
-                  >
-                    <ProductMedia
-                      src={p.images[0]}
-                      alt={p.name}
-                      className="aspect-square"
-                    />
-                    <div className="p-3">
-                      <p className="text-sm font-medium">{p.name}</p>
-                      <p
-                        className="text-sm"
-                        style={{ color: "var(--ink-soft)" }}
-                      >
-                        {formatAr(p.price)}
-                      </p>
-                    </div>
-                  </Link>
-                ))}
+                <p className="text-sm" style={{ color: "var(--ink-soft)" }}>
+                  Aucun favori enregistré.
+                </p>
               </div>
             </div>
           )}

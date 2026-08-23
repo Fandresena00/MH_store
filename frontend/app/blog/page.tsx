@@ -14,6 +14,18 @@ export default async function BlogPage() {
   const blogPosts = await getBlogPosts();
   const [first, ...rest] = blogPosts;
 
+  if (!first) {
+    return (
+      <div className="mx-auto max-w-300 px-5 py-20 text-center lg:px-10">
+        <p className="eyebrow">Le journal</p>
+        <h1 className="mt-2 font-display text-4xl">Aucun article publié</h1>
+        <p className="mt-3 text-sm" style={{ color: "var(--ink-soft)" }}>
+          Les articles publiés depuis l’administration apparaîtront ici.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-[1200px] px-5 py-10 lg:px-10 lg:py-14">
       <div className="text-center">

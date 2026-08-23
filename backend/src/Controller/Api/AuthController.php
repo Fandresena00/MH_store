@@ -10,6 +10,8 @@ use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -24,6 +26,12 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 #[Route('/api/auth', name: 'api_auth_')]
 class AuthController extends AbstractController
 {
+    #[Route('/login', name: 'login', methods: ['POST'])]
+    public function login(): never
+    {
+        throw new \LogicException('Cette route est interceptée par le firewall JSON.');
+    }
+
     #[Route('/register', name: 'register', methods: ['POST'])]
     public function register(
         Request $request,
@@ -33,6 +41,8 @@ class AuthController extends AbstractController
         ValidatorInterface $validator,
         JWTTokenManagerInterface $jwtManager,
         ApiNormalizer $normalizer,
+        MailerInterface $mailer,
+        string $frontendUrl,
     ): JsonResponse {
         $payload = json_decode($request->getContent(), true) ?? [];
 
@@ -62,14 +72,42 @@ class AuthController extends AbstractController
         $user->setRoles(['ROLE_USER']);
         $user->setPassword($passwordHasher->hashPassword($user, $password));
 
+        $verificationToken = bin2hex(random_bytes(32));
+        $user->setEmailVerificationTokenHash(hash('sha256', $verificationToken));
+        $user->setEmailVerificationExpiresAt(new \DateTimeImmutable('+24 hours'));
+
         $em->persist($user);
         $em->flush();
 
-        // On délivre directement un JWT à l'inscription, pour éviter à
-        // Next.js de devoir enchaîner un second appel de login.
+        $verificationUrl = rtrim($frontendUrl, '/').'/verification-email?token='.urlencode($verificationToken);
+        $mailer->send((new Email())
+            ->from('no-reply@mhstore.mg')
+            ->to($email)
+            ->subject('Vérifiez votre adresse email — M&H Store')
+            ->text("Bonjour {$firstName},\n\nVérifiez votre adresse email en ouvrant ce lien :\n{$verificationUrl}\n\nCe lien expire dans 24 heures.")
+        );
+
         return new JsonResponse([
-            'token' => $jwtManager->create($user),
-            'user' => $normalizer->user($user),
-        ], 201);
+            'message' => 'Un email de vérification a été envoyé.',
+            'email' => $user->getEmail(),
+        ], 202);
+    }
+
+    #[Route('/verify-email', name: 'verify_email', methods: ['GET'])]
+    public function verifyEmail(Request $request, UserRepository $userRepository, EntityManagerInterface $em): JsonResponse
+    {
+        $token = trim((string) $request->query->get('token', ''));
+        $user = $token === '' ? null : $userRepository->findOneByVerificationTokenHash(hash('sha256', $token));
+
+        if (!$user || !$user->getEmailVerificationExpiresAt() || $user->getEmailVerificationExpiresAt() < new \DateTimeImmutable()) {
+            return new JsonResponse(['error' => 'Le lien de vérification est invalide ou expiré.'], 400);
+        }
+
+        $user->setEmailVerifiedAt(new \DateTimeImmutable());
+        $user->setEmailVerificationTokenHash(null);
+        $user->setEmailVerificationExpiresAt(null);
+        $em->flush();
+
+        return new JsonResponse(['message' => 'Adresse email vérifiée.']);
     }
 }

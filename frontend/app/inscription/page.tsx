@@ -2,7 +2,7 @@
 
 import { AuthShell } from "@/components/auth/auth-shell";
 import { PasswordField } from "@/components/auth/password-field";
-import { register } from "@/lib/api";
+import { ApiError, register } from "@/lib/api";
 import { RiArrowRightLine } from "@remixicon/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -16,15 +16,23 @@ export default function SignupPage() {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     try {
-      await register({
+      const result = await register({
         firstName: String(form.get("firstName")),
         lastName: String(form.get("lastName")),
         email: String(form.get("email")),
         password: String(form.get("password")),
       });
-      router.push("/compte");
-    } catch {
-      setError("Impossible de créer le compte. Vérifiez les informations.");
+      router.push(
+        `/verification-email?email=${encodeURIComponent(result.email)}`,
+      );
+    } catch (cause) {
+      setError(
+        cause instanceof ApiError && cause.status === 409
+          ? "Un compte existe déjà avec cette adresse email."
+          : cause instanceof ApiError
+            ? cause.message
+            : "Impossible de créer le compte. Vérifiez les informations.",
+      );
     }
   }
   return (

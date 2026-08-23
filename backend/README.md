@@ -78,10 +78,34 @@ compte), `order_item`.
 
 Comptes de démonstration créés par les fixtures :
 
-| Rôle | Email | Mot de passe |
-|---|---|---|
-| Administrateur | admin@mhstore.mg | ChangeMoi123! |
-| Client | hanta@example.com | ChangeMoi123! |
+| Rôle           | Email             | Mot de passe  |
+| -------------- | ----------------- | ------------- |
+| Administrateur | admin@mhstore.mg  | ChangeMoi123! |
+| Client         | hanta@example.com | ChangeMoi123! |
+
+Le compte administrateur est créé par les fixtures. En développement, pour
+l'injecter dans la base après avoir configuré `DATABASE_URL` :
+
+```bash
+php bin/console doctrine:migrations:migrate
+php bin/console doctrine:fixtures:load --no-interaction
+```
+
+Pour créer ou réinitialiser uniquement un administrateur sans recharger les
+données :
+
+```bash
+php bin/console app:super-admin:create --email=admin@mhstore.mg --password="Un-Mot-De-Passe-Solide-2026"
+```
+
+L'adresse email du compte admin fixture est déjà vérifiée. Les nouveaux
+comptes clients doivent cliquer le lien reçu par email avant de se connecter.
+
+En local, `MESSENGER_TRANSPORT_DSN=sync://` envoie immédiatement le message.
+Pour recevoir réellement les emails, configure `MAILER_DSN` avec un SMTP,
+par exemple `smtp://utilisateur:motdepasse@smtp.example.com:587` (à mettre
+dans `.env.local`, jamais dans Git). `MAILER_DSN=null://null` est uniquement
+un transport de développement qui ignore les emails.
 
 ## 4. Générer les clés JWT (Lexik)
 
@@ -105,39 +129,42 @@ en prod.
 
 Toutes les réponses sont en JSON. Base URL en dev : `http://localhost:8000`.
 
-| Méthode | Route | Auth | Description |
-|---|---|---|---|
-| GET | `/api/products` | Publique | Liste, `?categorie=slug&tri=price_asc\|price_desc\|newest\|rating` |
-| GET | `/api/products/featured?limit=4` | Publique | Produits mis en avant (badge) |
-| GET | `/api/products/{slug}` | Publique | Fiche produit + avis + produits liés |
-| GET | `/api/categories` | Publique | Liste des catégories |
-| GET | `/api/blog` | Publique | Liste des articles |
-| GET | `/api/blog/{slug}` | Publique | Article + articles liés |
-| POST | `/api/checkout` | Publique (invité) ou JWT | Crée la commande, retourne `paymentLink` PAPI |
-| GET | `/api/orders/{reference}` | Publique | Suivi de commande par référence |
-| GET | `/api/account/orders` | JWT (`ROLE_USER`) | Historique de commandes du compte connecté |
-| POST | `/api/auth/register` | Publique | Inscription — retourne directement `{token, user}` |
-| POST | `/api/auth/login` | Publique | Géré par Lexik (json_login) — `{email, password}` → `{token}` |
-| GET | `/api/me` | JWT (`ROLE_USER`) | Profil de l'utilisateur connecté |
-| POST | `/api/contact` | Publique | Formulaire de contact/support |
+| Méthode | Route                              | Auth                     | Description                                                        |
+| ------- | ---------------------------------- | ------------------------ | ------------------------------------------------------------------ |
+| GET     | `/api/products`                    | Publique                 | Liste, `?categorie=slug&tri=price_asc\|price_desc\|newest\|rating` |
+| GET     | `/api/products/featured?limit=4`   | Publique                 | Produits mis en avant (badge)                                      |
+| GET     | `/api/products/{slug}`             | Publique                 | Fiche produit + avis + produits liés                               |
+| GET     | `/api/categories`                  | Publique                 | Liste des catégories                                               |
+| GET     | `/api/blog`                        | Publique                 | Liste des articles                                                 |
+| GET     | `/api/blog/{slug}`                 | Publique                 | Article + articles liés                                            |
+| POST    | `/api/checkout`                    | Publique (invité) ou JWT | Crée la commande, retourne `paymentLink` PAPI                      |
+| GET     | `/api/orders/{reference}`          | Publique                 | Suivi de commande par référence                                    |
+| GET     | `/api/account/orders`              | JWT (`ROLE_USER`)        | Historique de commandes du compte connecté                         |
+| POST    | `/api/auth/register`               | Publique                 | Inscription — envoie un email et retourne `{message, email}`       |
+| GET     | `/api/auth/verify-email?token=...` | Publique                 | Vérifie l'adresse email et active le compte                        |
+| POST    | `/api/auth/login`                  | Publique                 | Géré par Lexik (json_login) — `{email, password}` → `{token}`      |
+| GET     | `/api/me`                          | JWT (`ROLE_USER`)        | Profil de l'utilisateur connecté                                   |
+| POST    | `/api/contact`                     | Publique                 | Formulaire de contact/support                                      |
 
-**Authentification côté Next.js** : après login/register, stocker le
+**Authentification côté Next.js** : après login, stocker le
 `token` reçu (ex. cookie httpOnly posé par une route API Next, ou en
 mémoire côté client) et l'envoyer en header `Authorization: Bearer <token>`
 sur les routes protégées.
 
 **Corps attendu pour `POST /api/checkout`** :
+
 ```json
 {
-  "lines": [{"productId": 1, "quantity": 2}],
-  "paymentMethod": "MVOLA",
-  "shippingAddress": "Lot II M 12 Bis, Antaninandro",
-  "shippingCity": "Antananarivo",
-  "clientName": "Hanta Ravalison",
-  "email": "hanta@example.com",
-  "phone": "0340000000"
+    "lines": [{ "productId": 1, "quantity": 2 }],
+    "paymentMethod": "MVOLA",
+    "shippingAddress": "Lot II M 12 Bis, Antaninandro",
+    "shippingCity": "Antananarivo",
+    "clientName": "Hanta Ravalison",
+    "email": "hanta@example.com",
+    "phone": "0340000000"
 }
 ```
+
 `paymentMethod` accepte `MVOLA`, `ORANGE_MONEY`, `ARTEL_MONEY`, `BRED`
 (carte Visa/Mastercard). Les prix sont **toujours recalculés côté serveur**
 depuis la base — jamais depuis les valeurs envoyées par le client.
@@ -204,7 +231,7 @@ modifiable via une page web.
 
 ## 11. Ce qui reste à brancher côté backend
 
-- Envoi d'email réel (`ContactController`, confirmation de commande) —
+- Envoi d'email réel pour le support et la confirmation de commande —
   brancher `MailerInterface`.
 - Vraies photos produit à la place des dégradés `colorFrom`/`colorTo`.
 - Pagination sur `/api/products` et `/admin/produits` si le catalogue grossit.

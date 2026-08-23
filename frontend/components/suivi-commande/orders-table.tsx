@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { RiCheckLine, RiTruckLine, RiArrowRightSLine } from "@remixicon/react";
-import { products, paymentMethods, type Order } from "@/lib/data";
+import { paymentMethods, type Order } from "@/lib/data";
 import { ProductMedia } from "@/components/product/product-media";
 import { formatAr, formatDateShort } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -135,16 +135,16 @@ export function OrdersTable({ orders, initialOrderId }: { orders: Order[]; initi
 
               <div className="space-y-3">
                 {selected.lines.map((line) => {
-                  const product = products.find((p) => p.slug === line.productSlug);
-                  if (!product) return null;
                   return (
                     <div key={line.productSlug} className="flex items-center gap-3">
-                      <ProductMedia src={product.images[0]} alt={product.name} className="h-14 w-14 rounded-lg" />
+                      <ProductMedia src={line.image ?? ""} alt={line.productName ?? line.productSlug} className="h-14 w-14 rounded-lg" />
                       <div className="flex-1">
-                        <p className="text-sm font-medium">{product.name}</p>
+                        <p className="text-sm font-medium">{line.productName ?? line.productSlug}</p>
                         <p className="text-xs" style={{ color: "var(--ink-soft)" }}>Qté {line.quantity}</p>
                       </div>
-                      <span className="text-sm">{formatAr(product.price * line.quantity)}</span>
+                      {line.unitPrice !== undefined && (
+                        <span className="text-sm">{formatAr(line.unitPrice * line.quantity)}</span>
+                      )}
                     </div>
                   );
                 })}

@@ -33,16 +33,22 @@ const PRICE_RANGES = [
 export default async function BoutiquePage({
   searchParams,
 }: {
-  searchParams: { categorie?: string; q?: string; tri?: string; prix?: string };
+  searchParams: Promise<{
+    categorie?: string;
+    q?: string;
+    tri?: string;
+    prix?: string;
+  }>;
 }) {
+  const resolvedSearchParams = await searchParams;
   const [products, categories] = await Promise.all([
     getProducts(),
     getCategories(),
   ]);
-  const activeCategory = searchParams?.categorie;
-  const query = searchParams?.q?.trim().toLowerCase() ?? "";
-  const activePrice = searchParams?.prix;
-  const tri = searchParams?.tri ?? "recommandes";
+  const activeCategory = resolvedSearchParams.categorie;
+  const query = resolvedSearchParams.q?.trim().toLowerCase() ?? "";
+  const activePrice = resolvedSearchParams.prix;
+  const tri = resolvedSearchParams.tri ?? "recommandes";
 
   let filtered = products;
 
@@ -78,9 +84,9 @@ export default async function BoutiquePage({
     const params = new URLSearchParams();
     const merged = {
       categorie: activeCategory,
-      q: searchParams?.q,
+      q: resolvedSearchParams.q,
       prix: activePrice,
-      tri: searchParams?.tri,
+      tri: resolvedSearchParams.tri,
       ...overrides,
     };
     Object.entries(merged).forEach(([k, v]) => {
@@ -182,8 +188,8 @@ export default async function BoutiquePage({
           <input type="hidden" name="categorie" value={activeCategory} />
         )}
         {activePrice && <input type="hidden" name="prix" value={activePrice} />}
-        {searchParams?.tri && (
-          <input type="hidden" name="tri" value={searchParams.tri} />
+        {resolvedSearchParams.tri && (
+          <input type="hidden" name="tri" value={resolvedSearchParams.tri} />
         )}
         <RiSearchLine
           size={16}
@@ -193,7 +199,7 @@ export default async function BoutiquePage({
         <input
           type="search"
           name="q"
-          defaultValue={searchParams?.q ?? ""}
+          defaultValue={resolvedSearchParams.q ?? ""}
           placeholder="Rechercher un panier, un plaid, un bol…"
           className="field-input h-12 rounded-full pl-11"
         />

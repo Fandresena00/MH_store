@@ -26,6 +26,11 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 
     public function findOneByEmail(string $email): ?User { return $this->findOneBy(['email' => $email]); }
 
+    public function findOneByVerificationTokenHash(string $hash): ?User
+    {
+        return $this->findOneBy(['emailVerificationTokenHash' => $hash]);
+    }
+
     /**
      * Le super admin est unique — unicité garantie côté applicatif par
      * les commandes CLI (voir src/Command), PostgreSQL n'ayant pas de

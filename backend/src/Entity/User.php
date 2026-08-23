@@ -39,6 +39,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $phone = null;
 
     #[ORM\Column]
+    private ?\DateTimeImmutable $emailVerifiedAt = null;
+
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $emailVerificationTokenHash = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $emailVerificationExpiresAt = null;
+
+    #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
     /** @var Collection<int, Address> */
@@ -83,6 +92,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getFullName(): string { return trim($this->firstName.' '.$this->lastName); }
     public function getPhone(): ?string { return $this->phone; }
     public function setPhone(?string $phone): static { $this->phone = $phone; return $this; }
+    public function getEmailVerifiedAt(): ?\DateTimeImmutable { return $this->emailVerifiedAt; }
+    public function isEmailVerified(): bool { return null !== $this->emailVerifiedAt; }
+    public function setEmailVerifiedAt(?\DateTimeImmutable $verifiedAt): static { $this->emailVerifiedAt = $verifiedAt; return $this; }
+    public function getEmailVerificationTokenHash(): ?string { return $this->emailVerificationTokenHash; }
+    public function setEmailVerificationTokenHash(?string $hash): static { $this->emailVerificationTokenHash = $hash; return $this; }
+    public function getEmailVerificationExpiresAt(): ?\DateTimeImmutable { return $this->emailVerificationExpiresAt; }
+    public function setEmailVerificationExpiresAt(?\DateTimeImmutable $expiresAt): static { $this->emailVerificationExpiresAt = $expiresAt; return $this; }
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
 
     /** @return Collection<int, Address> */

@@ -30,6 +30,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Logo } from "./logo";
 
+const ADMIN_URL =
+  process.env.NEXT_PUBLIC_ADMIN_URL ?? "http://127.0.0.1:8000/admin/connexion";
+
 const NAV = [
   { label: "Boutique", href: "/boutique" },
   { label: "Journal", href: "/blog" },
@@ -119,6 +122,14 @@ export function Header() {
                 >
                   <RiUser3Line size={16} /> Mon compte
                 </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <a
+                  href={ADMIN_URL}
+                  className="flex w-full items-center gap-2.5"
+                >
+                  Espace administrateur
+                </a>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

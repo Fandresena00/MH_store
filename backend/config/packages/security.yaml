@@ -1,6 +1,6 @@
 security:
     password_hashers:
-        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: "auto"
 
     providers:
         app_user_provider:
@@ -33,6 +33,7 @@ security:
             stateless: true
             entry_point: jwt
             jwt: ~
+            user_checker: App\Security\VerifiedUserChecker
 
         # Espace admin (Twig, session) — formulaire de connexion classique.
         admin:
@@ -44,7 +45,7 @@ security:
                 path: admin_logout
                 target: admin_login
             remember_me:
-                secret: '%kernel.secret%'
+                secret: "%kernel.secret%"
                 lifetime: 604800
                 path: /admin
 

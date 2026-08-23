@@ -1,14 +1,15 @@
-import {
-  blogPosts as fallbackBlogPosts,
-  categories as fallbackCategories,
-  products as fallbackProducts,
-  type Order,
-  type Product,
-} from "@/lib/data";
+import { Product, Order } from "./data";
 
-const API_URL = (
-  process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000"
-).replace(/\/$/, "");
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+  ) {
+    super(message);
+  }
+}
 
 type ApiProduct = Omit<Product, "category" | "compareAt" | "images"> & {
   id: number;
@@ -28,19 +29,23 @@ type ApiBlogPost = {
   publishedAt: string;
 };
 
-const imageBySlug = new Map(
-  fallbackProducts.map((product) => [product.slug, product.images]),
-);
-const imageByBlogSlug = new Map(
-  fallbackBlogPosts.map((post) => [post.slug, post.cover]),
-);
-
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  if (!API_URL) throw new Error("NEXT_PUBLIC_API_URL is not configured");
+
   const response = await fetch(`${API_URL}${path}`, {
     ...init,
     headers: { Accept: "application/json", ...(init?.headers ?? {}) },
   });
-  if (!response.ok) throw new Error(`API ${response.status}`);
+  if (!response.ok) {
+    const body = (await response.json().catch(() => ({}))) as {
+      error?: string;
+      message?: string;
+    };
+    throw new ApiError(
+      body.error ?? body.message ?? `API ${response.status}`,
+      response.status,
+    );
+  }
   return response.json() as Promise<T>;
 }
 
@@ -59,7 +64,7 @@ function mapProduct(product: ApiProduct): Product {
     badge: product.badge as Product["badge"],
     description: product.description,
     stock: product.stock,
-    images: imageBySlug.get(product.slug) ?? [],
+    images: [],
   };
 }
 
@@ -70,7 +75,7 @@ function mapOrder(order: {
   total: number;
   paymentMethod: string;
   trackingNumber?: string | null;
-  items?: { product: ApiProduct; quantity: number }[];
+  items?: { product: ApiProduct; quantity: number; unitPrice: number }[];
 }): Order {
   const statusMap: Record<string, Order["status"]> = {
     confirmed: "En traitement",
@@ -95,6 +100,9 @@ function mapOrder(order: {
     lines: (order.items ?? []).map((item) => ({
       productSlug: item.product.slug,
       quantity: item.quantity,
+      productName: item.product.name,
+      unitPrice: item.unitPrice,
+      image: "",
     })),
     timeline: [
       {
@@ -129,7 +137,7 @@ function mapBlogPost(post: ApiBlogPost) {
     date: post.publishedAt,
     readTime: `${post.readTime} min`,
     category: post.category,
-    cover: imageByBlogSlug.get(post.slug) ?? "",
+    cover: "",
   };
 }
 
@@ -140,7 +148,7 @@ export async function getProducts(search = ""): Promise<Product[]> {
     );
     return response.data.map(mapProduct);
   } catch {
-    return fallbackProducts;
+    return [];
   }
 }
 
@@ -151,7 +159,7 @@ export async function getFeaturedProducts(limit = 4): Promise<Product[]> {
     );
     return response.data.map(mapProduct);
   } catch {
-    return fallbackProducts.filter((product) => product.badge).slice(0, limit);
+    return [];
   }
 }
 
@@ -162,7 +170,7 @@ export async function getProduct(slug: string): Promise<Product | null> {
     );
     return mapProduct(response.data);
   } catch {
-    return fallbackProducts.find((product) => product.slug === slug) ?? null;
+    return null;
   }
 }
 
@@ -174,12 +182,10 @@ export async function getCategories() {
     return response.data.map((category) => ({
       ...category,
       count: category.productCount,
-      image:
-        fallbackCategories.find((item) => item.slug === category.slug)?.image ??
-        "",
+      image: "",
     }));
   } catch {
-    return fallbackCategories;
+    return [];
   }
 }
 
@@ -188,7 +194,7 @@ export async function getBlogPosts() {
     const response = await request<{ data: ApiBlogPost[] }>("/api/blog");
     return response.data.map(mapBlogPost);
   } catch {
-    return fallbackBlogPosts;
+    return [];
   }
 }
 
@@ -199,7 +205,7 @@ export async function getBlogPost(slug: string) {
     );
     return mapBlogPost(response.data);
   } catch {
-    return fallbackBlogPosts.find((post) => post.slug === slug) ?? null;
+    return null;
   }
 }
 
@@ -219,13 +225,17 @@ export async function register(payload: {
   email: string;
   password: string;
 }) {
-  const response = await request<{ token: string }>("/api/auth/register", {
+  return request<{ message: string; email: string }>("/api/auth/register", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  localStorage.setItem("mh-token", response.token);
-  return response.token;
+}
+
+export async function verifyEmail(token: string) {
+  return request<{ message: string }>(
+    `/api/auth/verify-email?token=${encodeURIComponent(token)}`,
+  );
 }
 
 function authHeaders(): Record<string, string> {

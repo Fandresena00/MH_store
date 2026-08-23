@@ -40,9 +40,9 @@ export const metadata: Metadata = {
     "vannerie Madagascar",
     "décoration maison artisanale",
   ],
-  authors: [{ name: "M&H Store" }],
-  creator: "M&H Store",
-  publisher: "M&H Store",
+  authors: [{ name: SITE_NAME }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
   applicationName: SITE_NAME,
   category: "shopping",
   alternates: { canonical: "/" },
@@ -82,6 +82,7 @@ export default function RootLayout({
     <html
       lang="fr"
       className={`${fraunces.variable} ${manrope.variable}`}
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
       <body className="flex min-h-screen flex-col">

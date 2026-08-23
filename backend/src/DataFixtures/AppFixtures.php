@@ -99,6 +99,7 @@ class AppFixtures extends Fixture
         $admin->setFirstName('Mialy');
         $admin->setLastName('Rakoto');
         $admin->setRoles(['ROLE_ADMIN']);
+        $admin->setEmailVerifiedAt(new \DateTimeImmutable());
         $admin->setPassword($this->passwordHasher->hashPassword($admin, 'ChangeMoi123!'));
         $manager->persist($admin);
 
@@ -107,6 +108,7 @@ class AppFixtures extends Fixture
         $customer->setFirstName('Hanta');
         $customer->setLastName('Ravalison');
         $customer->setRoles(['ROLE_USER']);
+        $customer->setEmailVerifiedAt(new \DateTimeImmutable());
         $customer->setPassword($this->passwordHasher->hashPassword($customer, 'ChangeMoi123!'));
         $manager->persist($customer);
 

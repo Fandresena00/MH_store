@@ -2,7 +2,7 @@
 
 import { AuthShell } from "@/components/auth/auth-shell";
 import { PasswordField } from "@/components/auth/password-field";
-import { login } from "@/lib/api";
+import { ApiError, login } from "@/lib/api";
 import { RiArrowRightLine } from "@remixicon/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -18,8 +18,12 @@ export default function LoginPage() {
     try {
       await login(String(form.get("email")), String(form.get("password")));
       router.push("/compte");
-    } catch {
-      setError("Email ou mot de passe incorrect.");
+    } catch (cause) {
+      setError(
+        cause instanceof ApiError && cause.status === 401
+          ? "Email ou mot de passe incorrect, ou adresse email non vérifiée."
+          : "Connexion impossible. Vérifiez que la boutique peut joindre le serveur.",
+      );
     }
   }
   return (

@@ -6,7 +6,6 @@ import {
   getFeaturedProducts,
   getProducts,
 } from "@/lib/api";
-import { heroImages } from "@/lib/data";
 import { formatDateLong } from "@/lib/utils";
 import {
   RiArrowRightLine,
@@ -94,18 +93,18 @@ export default async function HomePage() {
 
           <div className="order-1 grid grid-cols-2 gap-4 lg:order-2">
             <ProductMedia
-              src={heroImages.primary}
+              src=""
               alt="Sélection d'objets artisanaux malgaches"
               priority
               className="col-span-2 aspect-[16/10] rounded-xl shadow-[var(--shadow-lift)] sm:aspect-[16/9]"
             />
             <ProductMedia
-              src={heroImages.secondary}
+              src=""
               alt="Panier tressé en raphia"
               className="aspect-square rounded-xl"
             />
             <ProductMedia
-              src={heroImages.tertiary}
+              src=""
               alt="Cabas en cuir et raphia"
               className="aspect-square rounded-xl"
             />
@@ -178,7 +177,7 @@ export default async function HomePage() {
       >
         <div className="mx-auto grid max-w-[1400px] grid-cols-1 items-center gap-10 px-5 py-20 lg:grid-cols-2 lg:px-10">
           <ProductMedia
-            src={heroImages.story}
+            src=""
             alt="Artisan au travail dans un atelier malgache"
             className="aspect-[4/5] rounded-xl order-2 lg:order-1"
           />

@@ -12,9 +12,10 @@ export const metadata: Metadata = {
 export default async function OrderTrackingPage({
   searchParams,
 }: {
-  searchParams: { commande?: string; q?: string };
+  searchParams: Promise<{ commande?: string; q?: string }>;
 }) {
-  const reference = searchParams?.commande ?? searchParams?.q;
+  const resolvedSearchParams = await searchParams;
+  const reference = resolvedSearchParams.commande ?? resolvedSearchParams.q;
   const list = reference
     ? await getOrder(reference)
         .then((response) => [response.data])
@@ -37,7 +38,7 @@ export default async function OrderTrackingPage({
         <input
           type="search"
           name="q"
-          defaultValue={searchParams?.q ?? ""}
+          defaultValue={resolvedSearchParams.q ?? ""}
           placeholder="Rechercher un numéro de commande…"
           className="field-input h-11 rounded-full pl-11"
         />
@@ -67,7 +68,7 @@ export default async function OrderTrackingPage({
           >
             <OrdersTable
               orders={list}
-              initialOrderId={searchParams?.commande}
+              initialOrderId={resolvedSearchParams.commande}
             />
           </Suspense>
         )}

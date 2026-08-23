@@ -1,8 +1,7 @@
-import Link from "next/link";
-import { RiArrowLeftLine } from "@remixicon/react";
 import { Logo } from "@/components/layout/logo";
 import { ProductMedia } from "@/components/product/product-media";
-import { heroImages } from "@/lib/data";
+import { RiArrowLeftLine } from "@remixicon/react";
+import Link from "next/link";
 
 export function AuthShell({
   children,
@@ -20,7 +19,11 @@ export function AuthShell({
       {/* ------------------------------------------------------------- FORMULAIRE */}
       <div className="flex flex-col justify-center px-6 py-14 sm:px-12 lg:px-20">
         <div className="mx-auto w-full max-w-sm">
-          <Link href="/" className="link-underline mb-8 inline-flex items-center gap-1.5 text-xs font-medium" style={{ color: "var(--ink-soft)" }}>
+          <Link
+            href="/"
+            className="link-underline mb-8 inline-flex items-center gap-1.5 text-xs font-medium"
+            style={{ color: "var(--ink-soft)" }}
+          >
             <RiArrowLeftLine size={14} /> Retour à la boutique
           </Link>
           <p className="eyebrow">{eyebrow}</p>
@@ -33,16 +36,26 @@ export function AuthShell({
       </div>
 
       {/* -------------------------------------------------------------- VISUEL */}
-      <div className="relative hidden overflow-hidden lg:block" style={{ background: "var(--teal-deep)" }}>
-        <ProductMedia src={heroImages.auth} alt="Artisanat malgache" className="absolute inset-0 h-full w-full opacity-50" />
+      <div
+        className="relative hidden overflow-hidden lg:block"
+        style={{ background: "var(--teal-deep)" }}
+      >
+        <ProductMedia
+          src=""
+          alt="Artisanat malgache"
+          className="absolute inset-0 h-full w-full opacity-50"
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-[var(--teal-deep)] via-transparent to-[var(--teal-deep)]/50" />
         <div className="relative flex h-full flex-col justify-between p-12 text-white">
           <Logo size="md" />
           <div>
             <p className="font-display text-3xl leading-snug">
-              « Le geste ne s'apprend pas dans un livre, il se transmet à la main. »
+              « Le geste ne s'apprend pas dans un livre, il se transmet à la
+              main. »
             </p>
-            <p className="mt-4 text-sm opacity-75">Live your dream — M&H Store</p>
+            <p className="mt-4 text-sm opacity-75">
+              Live your dream — M&H Store
+            </p>
           </div>
         </div>
       </div>
