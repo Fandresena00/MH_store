@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -16,13 +17,15 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class UserController extends AbstractController
 {
     #[Route('', name: 'admin_user_index', methods: ['GET'])]
-    public function index(UserRepository $userRepository): Response
+    public function index(Request $request, UserRepository $userRepository): Response
     {
-        return $this->render('admin/user/index.html.twig', ['users' => $userRepository->findBy([], ['createdAt' => 'DESC'])]);
+        $search = trim((string) $request->query->get('q', ''));
+        $role = $request->query->get('role');
+        return $this->render('admin/user/index.html.twig', ['users' => $userRepository->findForAdmin($search, $role), 'search' => $search, 'activeRole' => $role]);
     }
 
     #[Route('/{id}/basculer-admin', name: 'admin_user_toggle_admin', methods: ['POST'])]
-    public function toggleAdmin(User $user, Request $request, EntityManagerInterface $em): Response
+    public function toggleAdmin(User $user, Request $request, EntityManagerInterface $em, LoggerInterface $logger): Response
     {
         if (!$this->isCsrfTokenValid('toggle-admin-'.$user->getId(), $request->request->get('_token'))) {
             $this->addFlash('error', 'Jeton de sécurité invalide.');
@@ -47,7 +50,28 @@ class UserController extends AbstractController
         }
 
         $em->flush();
+        $logger->info('Rôle administrateur modifié', ['admin' => $user->getEmail(), 'roles' => $user->getRoles(), 'by' => $this->getUser()?->getUserIdentifier()]);
 
+        return $this->redirectToRoute('admin_user_index');
+    }
+
+    #[Route('/{id}/supprimer', name: 'admin_user_delete', methods: ['POST'])]
+    #[IsGranted('ROLE_SUPER_ADMIN')]
+    public function deleteAdmin(User $user, Request $request, EntityManagerInterface $em, LoggerInterface $logger): Response
+    {
+        if (!$this->isCsrfTokenValid('delete-admin-'.$user->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Jeton de sécurité invalide.');
+            return $this->redirectToRoute('admin_user_index');
+        }
+        if (in_array('ROLE_SUPER_ADMIN', $user->getRoles(), true) || $user === $this->getUser()) {
+            $this->addFlash('error', 'Le super administrateur ne peut pas être supprimé.');
+            return $this->redirectToRoute('admin_user_index');
+        }
+        $email = $user->getEmail();
+        $em->remove($user);
+        $em->flush();
+        $logger->warning('Administrateur supprimé', ['admin' => $email, 'by' => $this->getUser()?->getUserIdentifier()]);
+        $this->addFlash('success', $email.' a été supprimé.');
         return $this->redirectToRoute('admin_user_index');
     }
 }

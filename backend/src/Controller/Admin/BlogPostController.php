@@ -17,9 +17,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class BlogPostController extends AbstractController
 {
     #[Route('', name: 'admin_blog_index', methods: ['GET'])]
-    public function index(BlogPostRepository $blogPostRepository): Response
+    public function index(Request $request, BlogPostRepository $blogPostRepository): Response
     {
-        return $this->render('admin/blog/index.html.twig', ['posts' => $blogPostRepository->findAllOrdered()]);
+        $search = trim((string) $request->query->get('q', ''));
+        return $this->render('admin/blog/index.html.twig', ['posts' => $blogPostRepository->findForAdmin($search), 'search' => $search]);
     }
 
     #[Route('/nouveau', name: 'admin_blog_new', methods: ['GET', 'POST'])]

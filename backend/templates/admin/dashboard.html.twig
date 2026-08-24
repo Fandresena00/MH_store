@@ -21,6 +21,22 @@
         </div>
     </div>
 
+    <div class="chart-grid">
+        {% for chart in charts %}
+            <div class="card chart-card">
+                <div class="chart-heading"><h2>{{ chart.title }}</h2><span>Ar</span></div>
+                <div class="chart-bars">
+                    {% for label, value in chart.values %}
+                        <div class="chart-column" title="{{ label }} : {{ value|number_format(0, ',', ' ') }} Ar">
+                            <div class="chart-bar" style="height: {{ (value / chart.max * 100)|round }}%;"></div>
+                            <span>{{ label }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
     <div class="table-card">
         <div class="flex items-center justify-between" style="padding: 16px 16px 0;">
             <h2 style="font-size: 1.05rem;">Dernières commandes</h2>

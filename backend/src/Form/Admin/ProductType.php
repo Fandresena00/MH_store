@@ -7,6 +7,8 @@ use App\Entity\Product;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\ColorType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -40,10 +42,9 @@ class ProductType extends AbstractType
             ])
             ->add('materials', TextType::class, ['label' => 'Matières'])
             ->add('origin', TextType::class, ['label' => 'Origine / atelier'])
-            ->add('colorFrom', TextType::class, ['label' => 'Couleur dégradé (début)', 'attr' => ['type' => 'color']])
-            ->add('colorTo', TextType::class, ['label' => 'Couleur dégradé (fin)', 'attr' => ['type' => 'color']])
-            ->add('rating', NumberType::class, ['label' => 'Note moyenne (0-5)', 'attr' => ['step' => '0.1']])
-            ->add('reviewsCount', IntegerType::class, ['label' => "Nombre d'avis"])
+            ->add('colorFrom', ColorType::class, ['label' => 'Couleur dégradé (début)'])
+            ->add('colorTo', ColorType::class, ['label' => 'Couleur dégradé (fin)'])
+            ->add('imageFile', FileType::class, ['label' => 'Photo du produit', 'mapped' => false, 'required' => false, 'attr' => ['accept' => 'image/jpeg,image/png,image/webp']])
             ->add('description', TextareaType::class, ['label' => 'Description', 'attr' => ['rows' => 5]])
         ;
     }

@@ -24,4 +24,13 @@ class OrderRepository extends ServiceEntityRepository
     }
 
     public function findOneByReference(string $reference): ?Order { return $this->findOneBy(['reference' => $reference]); }
+
+    /** @return Order[] */
+    public function findForAdmin(?string $search = null, ?string $status = null): array
+    {
+        $qb = $this->createQueryBuilder('o')->leftJoin('o.user', 'u')->addSelect('u');
+        if ($search) $qb->andWhere('LOWER(o.reference) LIKE :search OR LOWER(o.guestEmail) LIKE :search OR LOWER(u.email) LIKE :search')->setParameter('search', '%'.mb_strtolower($search).'%');
+        if ($status) $qb->andWhere('o.status = :status')->setParameter('status', $status);
+        return $qb->orderBy('o.createdAt', 'DESC')->getQuery()->getResult();
+    }
 }

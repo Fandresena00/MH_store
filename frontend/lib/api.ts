@@ -1,6 +1,10 @@
-import { Product, Order } from "./data";
+import { Order, Product } from "./data";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+function mediaUrl(path: string | null | undefined): string {
+  return path ? `${API_URL}${path}` : "";
+}
 
 export class ApiError extends Error {
   constructor(
@@ -15,6 +19,7 @@ type ApiProduct = Omit<Product, "category" | "compareAt" | "images"> & {
   id: number;
   category: { name: string; slug: string };
   compareAtPrice: number | null;
+  image?: string | null;
   colorFrom?: string;
   colorTo?: string;
 };
@@ -64,7 +69,7 @@ function mapProduct(product: ApiProduct): Product {
     badge: product.badge as Product["badge"],
     description: product.description,
     stock: product.stock,
-    images: [],
+    images: product.image ? [mediaUrl(product.image)] : [],
   };
 }
 
@@ -216,6 +221,7 @@ export async function login(email: string, password: string) {
     body: JSON.stringify({ email, password }),
   });
   localStorage.setItem("mh-token", response.token);
+  window.dispatchEvent(new Event("mh-auth-changed"));
   return response.token;
 }
 
@@ -238,6 +244,11 @@ export async function verifyEmail(token: string) {
   );
 }
 
+export function logout() {
+  localStorage.removeItem("mh-token");
+  window.dispatchEvent(new Event("mh-auth-changed"));
+}
+
 function authHeaders(): Record<string, string> {
   const token =
     typeof window === "undefined" ? null : localStorage.getItem("mh-token");
@@ -255,6 +266,79 @@ export async function getCurrentUser() {
       createdAt: string;
     };
   }>("/api/me", { headers: authHeaders() });
+}
+
+export type AccountAddress = {
+  id: number;
+  label: string;
+  fullName: string;
+  line1: string;
+  city: string;
+  phone: string;
+};
+
+export type Account = {
+  fullName: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string | null;
+  createdAt: string;
+  addresses: AccountAddress[];
+};
+
+export async function getAccount(): Promise<Account> {
+  const response = await request<{ data: Account }>("/api/account", {
+    headers: authHeaders(),
+  });
+  return response.data;
+}
+
+export async function updateAccount(payload: {
+  firstName: string;
+  lastName: string;
+  phone: string;
+}) {
+  const response = await request<{ data: Account }>("/api/account", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify(payload),
+  });
+  return response.data;
+}
+
+export async function createAddress(payload: Omit<AccountAddress, "id">) {
+  const response = await request<{ data: AccountAddress }>(
+    "/api/account/addresses",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders() },
+      body: JSON.stringify(payload),
+    },
+  );
+  return response.data;
+}
+
+export async function updateAddress(
+  id: number,
+  payload: Omit<AccountAddress, "id">,
+) {
+  const response = await request<{ data: AccountAddress }>(
+    `/api/account/addresses/${id}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...authHeaders() },
+      body: JSON.stringify(payload),
+    },
+  );
+  return response.data;
+}
+
+export async function deleteAddress(id: number) {
+  await request(`/api/account/addresses/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
 }
 
 export async function getAccountOrders() {
@@ -281,4 +365,16 @@ export async function checkout(payload: Record<string, unknown>) {
       body: JSON.stringify(payload),
     },
   );
+}
+
+export async function sendContact(payload: {
+  name: string;
+  email: string;
+  message: string;
+}) {
+  return request<{ status: string; message: string }>("/api/contact", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 }

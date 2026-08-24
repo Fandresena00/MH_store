@@ -14,11 +14,13 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { logout } from "@/lib/api";
 import { cn, formatAr } from "@/lib/utils";
 import { useCartStore } from "@/store/cart.store";
 import {
   RiArrowRightLine,
   RiLoginBoxLine,
+  RiLogoutBoxRLine,
   RiMenuLine,
   RiShoppingBasketLine,
   RiTruckLine,
@@ -29,9 +31,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Logo } from "./logo";
-
-const ADMIN_URL =
-  process.env.NEXT_PUBLIC_ADMIN_URL ?? "http://127.0.0.1:8000/admin/connexion";
 
 const NAV = [
   { label: "Boutique", href: "/boutique" },
@@ -44,6 +43,7 @@ const NAV = [
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const lines = useCartStore((s) => s.lines);
   const remove = useCartStore((s) => s.remove);
   const count = useCartStore((s) => s.count());
@@ -55,6 +55,23 @@ export function Header() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    const syncAuthentication = () => {
+      setIsAuthenticated(Boolean(localStorage.getItem("mh-token")));
+    };
+
+    syncAuthentication();
+    window.addEventListener("mh-auth-changed", syncAuthentication);
+    return () =>
+      window.removeEventListener("mh-auth-changed", syncAuthentication);
+  }, []);
+
+  function handleLogout() {
+    logout();
+    setIsAuthenticated(false);
+    setMobileOpen(false);
+  }
 
   return (
     <header
@@ -90,22 +107,26 @@ export function Header() {
                 Espace client
               </div>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Link
-                  href="/connexion"
-                  className="flex w-full items-center gap-2.5"
-                >
-                  <RiLoginBoxLine size={16} /> Se connecter
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Link
-                  href="/inscription"
-                  className="flex w-full items-center gap-2.5"
-                >
-                  <RiUserAddLine size={16} /> Créer un compte
-                </Link>
-              </DropdownMenuItem>
+              {!isAuthenticated && (
+                <>
+                  <DropdownMenuItem>
+                    <Link
+                      href="/connexion"
+                      className="flex w-full items-center gap-2.5"
+                    >
+                      <RiLoginBoxLine size={16} /> Se connecter
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link
+                      href="/inscription"
+                      className="flex w-full items-center gap-2.5"
+                    >
+                      <RiUserAddLine size={16} /> Créer un compte
+                    </Link>
+                  </DropdownMenuItem>
+                </>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem>
                 <Link
@@ -123,14 +144,17 @@ export function Header() {
                   <RiUser3Line size={16} /> Mon compte
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <a
-                  href={ADMIN_URL}
-                  className="flex w-full items-center gap-2.5"
-                >
-                  Espace administrateur
-                </a>
-              </DropdownMenuItem>
+              {isAuthenticated && (
+                <DropdownMenuItem>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="flex w-full items-center gap-2.5 text-left"
+                  >
+                    <RiLogoutBoxRLine size={16} /> Déconnexion
+                  </button>
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -260,20 +284,41 @@ export function Header() {
               </nav>
               <div className="divider-stitch mx-5" />
               <div className="flex flex-col gap-2 p-5">
-                <Link
-                  href="/connexion"
-                  onClick={() => setMobileOpen(false)}
-                  className="btn-primary flex items-center justify-center gap-2 py-3 text-sm font-semibold"
-                >
-                  Se connecter <RiArrowRightLine size={15} />
-                </Link>
-                <Link
-                  href="/inscription"
-                  onClick={() => setMobileOpen(false)}
-                  className="btn-outline flex items-center justify-center gap-2 py-3 text-sm font-semibold"
-                >
-                  Créer un compte
-                </Link>
+                {isAuthenticated ? (
+                  <>
+                    <Link
+                      href="/compte"
+                      onClick={() => setMobileOpen(false)}
+                      className="btn-primary flex items-center justify-center gap-2 py-3 text-sm font-semibold"
+                    >
+                      Mon compte
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="btn-outline flex items-center justify-center gap-2 py-3 text-sm font-semibold"
+                    >
+                      Déconnexion
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/connexion"
+                      onClick={() => setMobileOpen(false)}
+                      className="btn-primary flex items-center justify-center gap-2 py-3 text-sm font-semibold"
+                    >
+                      Se connecter <RiArrowRightLine size={15} />
+                    </Link>
+                    <Link
+                      href="/inscription"
+                      onClick={() => setMobileOpen(false)}
+                      className="btn-outline flex items-center justify-center gap-2 py-3 text-sm font-semibold"
+                    >
+                      Créer un compte
+                    </Link>
+                  </>
+                )}
               </div>
             </SheetContent>
           </Sheet>

@@ -1,7 +1,17 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { getAccountOrders, getCurrentUser } from "@/lib/api";
+import {
+  createAddress,
+  deleteAddress,
+  getAccount,
+  getAccountOrders,
+  logout,
+  updateAccount,
+  updateAddress,
+  type Account,
+  type AccountAddress,
+} from "@/lib/api";
 import type { Order } from "@/lib/data";
 import { formatAr, formatDateShort } from "@/lib/utils";
 import {
@@ -12,6 +22,7 @@ import {
   RiShoppingBagLine,
 } from "@remixicon/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const TABS = [
@@ -31,22 +42,109 @@ function statusClassName(status: string) {
 }
 
 export function AccountClient() {
+  const router = useRouter();
   const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("commandes");
-  const [account, setAccount] = useState<{
-    fullName: string;
-    email: string;
-    createdAt: string;
-  } | null>(null);
+  const [account, setAccount] = useState<Account | null>(null);
   const [accountOrders, setAccountOrders] = useState<Order[]>([]);
+  const [addressForm, setAddressForm] = useState<Omit<AccountAddress, "id">>({
+    label: "",
+    fullName: "",
+    line1: "",
+    city: "",
+    phone: "",
+  });
+  const [editingAddressId, setEditingAddressId] = useState<number | null>(null);
+  const [feedback, setFeedback] = useState("");
 
   useEffect(() => {
-    Promise.all([getCurrentUser(), getAccountOrders()])
+    Promise.all([getAccount(), getAccountOrders()])
       .then(([user, response]) => {
-        setAccount(user.data);
+        setAccount(user);
         setAccountOrders(response.data);
       })
       .catch(() => undefined);
   }, []);
+
+  async function savePersonalInformation(
+    event: React.FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    try {
+      const updated = await updateAccount({
+        firstName: String(form.get("firstName")),
+        lastName: String(form.get("lastName")),
+        phone: String(form.get("phone")),
+      });
+      setAccount(updated);
+      setFeedback("Informations enregistrées.");
+    } catch {
+      setFeedback("Impossible d’enregistrer les informations.");
+    }
+  }
+
+  async function saveAddress(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    try {
+      const saved = editingAddressId
+        ? await updateAddress(editingAddressId, addressForm)
+        : await createAddress(addressForm);
+      setAccount((current) =>
+        current
+          ? {
+              ...current,
+              addresses: editingAddressId
+                ? current.addresses.map((address) =>
+                    address.id === saved.id ? saved : address,
+                  )
+                : [...current.addresses, saved],
+            }
+          : current,
+      );
+      setEditingAddressId(null);
+      setAddressForm({
+        label: "",
+        fullName: "",
+        line1: "",
+        city: "",
+        phone: "",
+      });
+      setFeedback("Adresse enregistrée.");
+    } catch {
+      setFeedback("Impossible d’enregistrer cette adresse.");
+    }
+  }
+
+  async function removeAddress(id: number) {
+    try {
+      await deleteAddress(id);
+      setAccount((current) =>
+        current
+          ? {
+              ...current,
+              addresses: current.addresses.filter(
+                (address) => address.id !== id,
+              ),
+            }
+          : current,
+      );
+      setFeedback("Adresse supprimée.");
+    } catch {
+      setFeedback("Impossible de supprimer cette adresse.");
+    }
+  }
+
+  function startAddressEdit(address: AccountAddress) {
+    setEditingAddressId(address.id);
+    setAddressForm({
+      label: address.label,
+      fullName: address.fullName,
+      line1: address.line1,
+      city: address.city,
+      phone: address.phone,
+    });
+    setFeedback("");
+  }
 
   return (
     <div className="mx-auto max-w-300 px-5 py-10 lg:px-10 lg:py-14">
@@ -68,6 +166,11 @@ export function AccountClient() {
           </p>
         </div>
       </div>
+      {feedback && (
+        <p className="mt-4 text-sm" style={{ color: "var(--teal-deep)" }}>
+          {feedback}
+        </p>
+      )}
 
       <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[220px_1fr]">
         <nav className="space-y-1">
@@ -86,6 +189,11 @@ export function AccountClient() {
             </button>
           ))}
           <button
+            type="button"
+            onClick={() => {
+              logout();
+              router.push("/connexion");
+            }}
             className="mt-4 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium"
             style={{ color: "var(--error)" }}
           >
@@ -142,23 +250,94 @@ export function AccountClient() {
           {tab === "adresses" && (
             <div className="space-y-4">
               <h2 className="font-display text-xl">Adresses enregistrées</h2>
-              <div className="card-hairline max-w-sm p-5">
-                <p className="eyebrow mb-2">Domicile</p>
-                <p className="text-sm">Hanta Ravalison</p>
-                <p className="text-sm" style={{ color: "var(--ink-soft)" }}>
-                  Lot II M 12 Bis, Antaninandro
-                  <br />
-                  Antananarivo 101, Madagascar
-                  <br />
-                  +261 34 00 000 00
-                </p>
-                <button className="link-underline mt-3 text-sm font-medium">
-                  Modifier
-                </button>
-              </div>
-              <button className="btn-primary px-6 py-3 text-sm font-semibold">
-                + Ajouter une adresse
-              </button>
+              {account?.addresses.map((address) => (
+                <div key={address.id} className="card-hairline max-w-sm p-5">
+                  <p className="eyebrow mb-2">{address.label}</p>
+                  <p className="text-sm">{address.fullName}</p>
+                  <p className="text-sm" style={{ color: "var(--ink-soft)" }}>
+                    {address.line1}
+                    <br />
+                    {address.city}
+                    <br />
+                    {address.phone}
+                  </p>
+                  <div className="mt-3 flex gap-4 text-sm font-medium">
+                    <button
+                      type="button"
+                      className="link-underline"
+                      onClick={() => startAddressEdit(address)}
+                    >
+                      Modifier
+                    </button>
+                    <button
+                      type="button"
+                      className="link-underline text-error"
+                      onClick={() => removeAddress(address.id)}
+                    >
+                      Supprimer
+                    </button>
+                  </div>
+                </div>
+              ))}
+              <form onSubmit={saveAddress} className="max-w-md space-y-3">
+                <h3 className="font-display text-lg">
+                  {editingAddressId
+                    ? "Modifier l’adresse"
+                    : "Ajouter une adresse"}
+                </h3>
+                {(["label", "fullName", "line1", "city", "phone"] as const).map(
+                  (field) => (
+                    <input
+                      key={field}
+                      required
+                      name={field}
+                      value={addressForm[field]}
+                      onChange={(event) =>
+                        setAddressForm({
+                          ...addressForm,
+                          [field]: event.target.value,
+                        })
+                      }
+                      className="field-input"
+                      placeholder={
+                        {
+                          label: "Libellé",
+                          fullName: "Nom complet",
+                          line1: "Adresse",
+                          city: "Ville",
+                          phone: "Téléphone",
+                        }[field]
+                      }
+                    />
+                  ),
+                )}
+                <div className="flex gap-3">
+                  <button
+                    type="submit"
+                    className="btn-primary px-6 py-3 text-sm font-semibold"
+                  >
+                    Enregistrer
+                  </button>
+                  {editingAddressId && (
+                    <button
+                      type="button"
+                      className="btn-outline px-6 py-3 text-sm"
+                      onClick={() => {
+                        setEditingAddressId(null);
+                        setAddressForm({
+                          label: "",
+                          fullName: "",
+                          line1: "",
+                          city: "",
+                          phone: "",
+                        });
+                      }}
+                    >
+                      Annuler
+                    </button>
+                  )}
+                </div>
+              </form>
             </div>
           )}
 
@@ -174,32 +353,56 @@ export function AccountClient() {
           )}
 
           {tab === "parametres" && (
-            <div className="max-w-md space-y-5">
+            <form
+              className="max-w-md space-y-5"
+              onSubmit={savePersonalInformation}
+            >
               <h2 className="font-display text-xl">
                 Informations personnelles
               </h2>
-              <div>
-                <label className="field-label">Nom complet</label>
-                <input defaultValue="Hanta Ravalison" className="field-input" />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="field-label">Prénom</label>
+                  <input
+                    name="firstName"
+                    defaultValue={account?.firstName ?? ""}
+                    className="field-input"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="field-label">Nom</label>
+                  <input
+                    name="lastName"
+                    defaultValue={account?.lastName ?? ""}
+                    className="field-input"
+                    required
+                  />
+                </div>
               </div>
               <div>
                 <label className="field-label">Email</label>
                 <input
-                  defaultValue="hanta.r@email.com"
+                  value={account?.email ?? ""}
                   className="field-input"
+                  readOnly
                 />
               </div>
               <div>
                 <label className="field-label">Téléphone</label>
                 <input
-                  defaultValue="+261 34 00 000 00"
+                  name="phone"
+                  defaultValue={account?.phone ?? ""}
                   className="field-input"
                 />
               </div>
-              <button className="btn-primary px-6 py-3 text-sm font-semibold">
+              <button
+                type="submit"
+                className="btn-primary px-6 py-3 text-sm font-semibold"
+              >
                 Enregistrer
               </button>
-            </div>
+            </form>
           )}
         </div>
       </div>

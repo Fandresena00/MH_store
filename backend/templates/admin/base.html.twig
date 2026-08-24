@@ -24,6 +24,9 @@
             {prefix: 'admin_blog', route: 'admin_blog_index', label: 'Journal'},
             {prefix: 'admin_user', route: 'admin_user_index', label: 'Utilisateurs'},
         ] %}
+        {% if is_granted('ROLE_SUPER_ADMIN') %}
+            {% set links = links|merge([{prefix: 'admin_logs', route: 'admin_logs', label: 'Logs'}]) %}
+        {% endif %}
         {% for link in links %}
             <a href="{{ path(link.route) }}" class="{{ current starts with link.prefix ? 'is-active' : '' }}">{{ link.label }}</a>
         {% endfor %}

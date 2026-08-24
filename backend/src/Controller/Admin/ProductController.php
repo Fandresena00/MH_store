@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -16,11 +17,14 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_ADMIN')]
 class ProductController extends AbstractController
 {
+    public function __construct(private readonly string $productUploadDir) {}
     #[Route('', name: 'admin_product_index', methods: ['GET'])]
-    public function index(ProductRepository $productRepository): Response
+    public function index(Request $request, ProductRepository $productRepository): Response
     {
+        $search = trim((string) $request->query->get('q', ''));
         return $this->render('admin/product/index.html.twig', [
-            'products' => $productRepository->findBy([], ['id' => 'DESC']),
+            'products' => $productRepository->findForAdmin($search),
+            'search' => $search,
         ]);
     }
 
@@ -32,6 +36,7 @@ class ProductController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $this->saveImage($form->get('imageFile')->getData(), $product);
             $em->persist($product);
             $em->flush();
             $this->addFlash('success', 'Produit "'.$product->getName().'" créé.');
@@ -49,6 +54,7 @@ class ProductController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $this->saveImage($form->get('imageFile')->getData(), $product);
             $em->flush();
             $this->addFlash('success', 'Produit "'.$product->getName().'" mis à jour.');
 
@@ -56,6 +62,14 @@ class ProductController extends AbstractController
         }
 
         return $this->render('admin/product/form.html.twig', ['form' => $form, 'product' => $product]);
+    }
+
+    private function saveImage(?UploadedFile $image, Product $product): void
+    {
+        if (!$image) return;
+        $filename = bin2hex(random_bytes(16)).'.'.$image->guessExtension();
+        $image->move($this->productUploadDir, $filename);
+        $product->setImagePath('/uploads/products/'.$filename);
     }
 
     #[Route('/{id}/supprimer', name: 'admin_product_delete', methods: ['POST'])]

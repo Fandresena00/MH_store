@@ -31,6 +31,19 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         return $this->findOneBy(['emailVerificationTokenHash' => $hash]);
     }
 
+    /** @return User[] */
+    public function findForAdmin(?string $search = null, ?string $role = null): array
+    {
+        $qb = $this->createQueryBuilder('u');
+        if ($search) {
+            $qb->andWhere('LOWER(u.email) LIKE :search OR LOWER(u.firstName) LIKE :search OR LOWER(u.lastName) LIKE :search')
+                ->setParameter('search', '%'.mb_strtolower($search).'%');
+        }
+        if ($role === 'admin') $qb->andWhere('u.roles LIKE :role')->setParameter('role', '%ROLE_ADMIN%');
+        if ($role === 'client') $qb->andWhere('u.roles NOT LIKE :role')->setParameter('role', '%ROLE_ADMIN%');
+        return $qb->orderBy('u.createdAt', 'DESC')->getQuery()->getResult();
+    }
+
     /**
      * Le super admin est unique — unicité garantie côté applicatif par
      * les commandes CLI (voir src/Command), PostgreSQL n'ayant pas de

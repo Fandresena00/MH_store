@@ -2,6 +2,7 @@
 {% block header_title %}Utilisateurs{% endblock %}
 
 {% block admin_body %}
+    <form method="get" class="mb-6 flex gap-2"><input type="search" name="q" value="{{ search }}" placeholder="Nom ou email…"><select name="role"><option value="">Tous les rôles</option><option value="admin" {{ activeRole == 'admin' ? 'selected' : '' }}>Administrateurs</option><option value="client" {{ activeRole == 'client' ? 'selected' : '' }}>Clients</option></select><button class="btn btn-outline">Filtrer</button></form>
     <p class="text-soft mb-6">{{ users|length }} compte(s)</p>
 
     <div class="table-card">
@@ -23,12 +24,10 @@
                         </td>
                         <td class="text-soft">{{ user.createdAt|date('d/m/Y') }}</td>
                         <td class="text-right">
-                            {% if user != app.user and 'ROLE_SUPER_ADMIN' not in user.roles %}
-                                <form action="{{ path('admin_user_toggle_admin', {id: user.id}) }}" method="post" style="display:inline;">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('toggle-admin-' ~ user.id) }}">
-                                    <button type="submit" class="btn-link">
-                                        {{ 'ROLE_ADMIN' in user.roles ? 'Retirer admin' : 'Nommer admin' }}
-                                    </button>
+                            {% if user != app.user and 'ROLE_SUPER_ADMIN' not in user.roles and 'ROLE_ADMIN' in user.roles %}
+                                <form action="{{ path('admin_user_delete', {id: user.id}) }}" method="post" style="display:inline;" onsubmit="return confirm('Supprimer cet administrateur ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete-admin-' ~ user.id) }}">
+                                    <button type="submit" class="btn-danger">Supprimer</button>
                                 </form>
                             {% else %}
                                 <span class="text-soft text-sm">—</span>

@@ -50,6 +50,9 @@ class Product
     #[ORM\Column(length: 7)]
     private string $colorTo = '#E17A57';
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $imagePath = null;
+
     #[ORM\Column(length: 30, nullable: true)]
     private ?string $badge = null;
 
@@ -95,6 +98,8 @@ class Product
     public function setColorFrom(string $colorFrom): static { $this->colorFrom = $colorFrom; return $this; }
     public function getColorTo(): string { return $this->colorTo; }
     public function setColorTo(string $colorTo): static { $this->colorTo = $colorTo; return $this; }
+    public function getImagePath(): ?string { return $this->imagePath; }
+    public function setImagePath(?string $imagePath): static { $this->imagePath = $imagePath; return $this; }
     public function getBadge(): ?string { return $this->badge; }
     public function setBadge(?string $badge): static { $this->badge = $badge; return $this; }
     public function getDescription(): string { return $this->description; }

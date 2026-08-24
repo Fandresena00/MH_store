@@ -27,6 +27,7 @@ class SuperAdminCreateCommand extends Command
         private readonly EntityManagerInterface $em,
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly ValidatorInterface $validator,
+        private readonly string $adminUsersJson,
     ) {
         parent::__construct();
     }
@@ -38,6 +39,7 @@ class SuperAdminCreateCommand extends Command
             ->addOption('password', null, InputOption::VALUE_REQUIRED, 'Mot de passe du super admin')
             ->addOption('first-name', null, InputOption::VALUE_REQUIRED, 'Prénom', 'Super')
             ->addOption('last-name', null, InputOption::VALUE_REQUIRED, 'Nom', 'Admin')
+            ->addOption('from-env', null, InputOption::VALUE_NONE, 'Utilise le premier compte ROLE_SUPER_ADMIN de ADMIN_USERS_JSON')
         ;
     }
 
@@ -45,6 +47,19 @@ class SuperAdminCreateCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         $io->title('M&H Store — Création du super administrateur');
+
+        if ($input->getOption('from-env')) {
+            $users = json_decode($this->adminUsersJson, true);
+            $envUser = is_array($users) ? array_values(array_filter($users, static fn ($user) => ($user['role'] ?? '') === 'ROLE_SUPER_ADMIN'))[0] ?? null : null;
+            if (!$envUser) {
+                $io->error('ADMIN_USERS_JSON ne contient aucun ROLE_SUPER_ADMIN valide.');
+                return Command::FAILURE;
+            }
+            $input->setOption('email', $envUser['email'] ?? null);
+            $input->setOption('password', $envUser['password'] ?? null);
+            $input->setOption('first-name', $envUser['firstName'] ?? 'Super');
+            $input->setOption('last-name', $envUser['lastName'] ?? 'Admin');
+        }
 
         $existing = $this->userRepository->findSuperAdmin();
         if ($existing) {

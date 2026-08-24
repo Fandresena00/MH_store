@@ -46,6 +46,7 @@ class ApiNormalizer
             'origin' => $product->getOrigin(),
             'colorFrom' => $product->getColorFrom(),
             'colorTo' => $product->getColorTo(),
+            'image' => $product->getImagePath(),
             'badge' => $product->getBadge(),
             'description' => $product->getDescription(),
             'stock' => $product->getStock(),

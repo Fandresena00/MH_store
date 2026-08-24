@@ -3,6 +3,7 @@
 
 {% block admin_body %}
     <div class="flex items-center justify-between mb-6">
+        <form method="get" class="flex gap-2"><input type="search" name="q" value="{{ search }}" placeholder="Nom ou slug…"><button class="btn btn-outline">Rechercher</button></form>
         <p class="text-soft">{{ categories|length }} catégorie(s)</p>
         <a href="{{ path('admin_category_new') }}" class="btn btn-primary">+ Nouvelle catégorie</a>
     </div>

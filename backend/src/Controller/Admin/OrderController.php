@@ -27,12 +27,13 @@ class OrderController extends AbstractController
     public function index(Request $request, OrderRepository $orderRepository): Response
     {
         $status = $request->query->get('status');
-        $criteria = $status ? ['status' => $status] : [];
+        $search = trim((string) $request->query->get('q', ''));
 
         return $this->render('admin/order/index.html.twig', [
-            'orders' => $orderRepository->findBy($criteria, ['createdAt' => 'DESC']),
+            'orders' => $orderRepository->findForAdmin($search, $status),
             'statuses' => self::STATUSES,
             'activeStatus' => $status,
+            'search' => $search,
         ]);
     }
 

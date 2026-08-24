@@ -17,9 +17,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class CategoryController extends AbstractController
 {
     #[Route('', name: 'admin_category_index', methods: ['GET'])]
-    public function index(CategoryRepository $categoryRepository): Response
+    public function index(Request $request, CategoryRepository $categoryRepository): Response
     {
-        return $this->render('admin/category/index.html.twig', ['categories' => $categoryRepository->findAll()]);
+        $search = trim((string) $request->query->get('q', ''));
+        return $this->render('admin/category/index.html.twig', ['categories' => $categoryRepository->findForAdmin($search), 'search' => $search]);
     }
 
     #[Route('/nouvelle', name: 'admin_category_new', methods: ['GET', 'POST'])]

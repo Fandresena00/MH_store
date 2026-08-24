@@ -6,9 +6,6 @@ import {
 import Link from "next/link";
 import { Logo } from "./logo";
 
-const ADMIN_URL =
-  process.env.NEXT_PUBLIC_ADMIN_URL ?? "http://127.0.0.1:8000/admin/connexion";
-
 const COLUMNS = [
   {
     title: "Boutique",
@@ -35,7 +32,6 @@ const COLUMNS = [
       { label: "Journal", href: "/blog" },
       { label: "Mentions légales", href: "/legal?section=mentions" },
       { label: "Confidentialité", href: "/legal?section=confidentialite" },
-      { label: "Espace administrateur", href: ADMIN_URL },
     ],
   },
 ];

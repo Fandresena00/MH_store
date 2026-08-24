@@ -1,7 +1,14 @@
 "use client";
 
+import { sendContact } from "@/lib/api";
+import {
+  RiAddLine,
+  RiMailLine,
+  RiQuestionLine,
+  RiSubtractLine,
+  RiWhatsappLine,
+} from "@remixicon/react";
 import { useState } from "react";
-import { RiQuestionLine, RiMailLine, RiChat3Line, RiAddLine, RiSubtractLine } from "@remixicon/react";
 
 const FAQS = [
   {
@@ -24,24 +31,56 @@ const FAQS = [
 
 export function SupportClient() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [feedback, setFeedback] = useState("");
+
+  async function submitContact(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    try {
+      const result = await sendContact({
+        name: String(form.get("name")),
+        email: String(form.get("email")),
+        message: String(form.get("message")),
+      });
+      setFeedback(result.message);
+      event.currentTarget.reset();
+    } catch {
+      setFeedback("Impossible d’envoyer le message pour le moment.");
+    }
+  }
 
   return (
     <div className="mx-auto max-w-[1000px] px-5 py-10 lg:py-14">
       <div className="text-center">
         <p className="eyebrow">Support client</p>
-        <h1 className="mt-2 font-display text-4xl">Comment pouvons-nous vous aider ?</h1>
+        <h1 className="mt-2 font-display text-4xl">
+          Comment pouvons-nous vous aider ?
+        </h1>
       </div>
 
       <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
         {[
-          { icon: RiQuestionLine, title: "Centre d'aide", desc: "Réponses aux questions fréquentes" },
-          { icon: RiChat3Line, title: "Chat en direct", desc: "Lun-Ven, 8h-18h" },
+          {
+            icon: RiQuestionLine,
+            title: "Centre d'aide",
+            desc: "Réponses aux questions fréquentes",
+          },
+          {
+            icon: RiWhatsappLine,
+            title: "WhatsApp",
+            desc: "+261 34 00 000 00",
+          },
           { icon: RiMailLine, title: "Par email", desc: "hello@mhstore.mg" },
         ].map((c) => (
-          <div key={c.title} className="card-hairline flex flex-col items-center p-6 text-center">
+          <div
+            key={c.title}
+            className="card-hairline flex flex-col items-center p-6 text-center"
+          >
             <c.icon size={22} style={{ color: "var(--teal)" }} />
             <p className="mt-3 font-display text-base">{c.title}</p>
-            <p className="text-xs" style={{ color: "var(--ink-soft)" }}>{c.desc}</p>
+            <p className="text-xs" style={{ color: "var(--ink-soft)" }}>
+              {c.desc}
+            </p>
           </div>
         ))}
       </div>
@@ -50,17 +89,28 @@ export function SupportClient() {
         <h2 className="mb-6 font-display text-2xl">Questions fréquentes</h2>
         <div style={{ borderColor: "var(--line)" }}>
           {FAQS.map((f, i) => (
-            <div key={f.q} className="border-b py-5" style={{ borderColor: "var(--line)" }}>
+            <div
+              key={f.q}
+              className="border-b py-5"
+              style={{ borderColor: "var(--line)" }}
+            >
               <button
                 onClick={() => setOpenIndex(openIndex === i ? null : i)}
                 className="flex w-full items-center justify-between text-left"
                 aria-expanded={openIndex === i}
               >
                 <span className="font-display text-lg">{f.q}</span>
-                {openIndex === i ? <RiSubtractLine size={18} /> : <RiAddLine size={18} />}
+                {openIndex === i ? (
+                  <RiSubtractLine size={18} />
+                ) : (
+                  <RiAddLine size={18} />
+                )}
               </button>
               {openIndex === i && (
-                <p className="mt-3 max-w-2xl text-sm leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+                <p
+                  className="mt-3 max-w-2xl text-sm leading-relaxed"
+                  style={{ color: "var(--ink-soft)" }}
+                >
                   {f.a}
                 </p>
               )}
@@ -69,19 +119,61 @@ export function SupportClient() {
         </div>
       </div>
 
-      <div className="mt-16 rounded-xl border p-6 sm:p-10" style={{ borderColor: "var(--line)", background: "var(--paper-raised)" }}>
+      <div
+        className="mt-16 rounded-xl border p-6 sm:p-10"
+        style={{
+          borderColor: "var(--line)",
+          background: "var(--paper-raised)",
+        }}
+      >
         <h2 className="font-display text-2xl">Nous contacter</h2>
         <p className="mt-1 text-sm" style={{ color: "var(--ink-soft)" }}>
           Une question sur une commande ou un produit ? Écrivez-nous.
         </p>
-        <form className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <input placeholder="Nom" className="field-input" />
-          <input placeholder="Email" type="email" className="field-input" />
-          <textarea placeholder="Votre message" rows={4} className="field-input h-28 py-3 sm:col-span-2" />
-          <button type="submit" className="btn-primary px-6 py-3 text-sm font-semibold sm:col-span-2 sm:w-fit">
+        <a
+          href="https://wa.me/261340000000"
+          target="_blank"
+          rel="noreferrer"
+          className="btn-outline mt-5 inline-flex px-5 py-3 text-sm font-semibold"
+        >
+          Écrire sur WhatsApp
+        </a>
+        <form
+          className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2"
+          onSubmit={submitContact}
+        >
+          <input
+            name="name"
+            placeholder="Nom"
+            className="field-input"
+            required
+          />
+          <input
+            name="email"
+            placeholder="Email"
+            type="email"
+            className="field-input"
+            required
+          />
+          <textarea
+            name="message"
+            placeholder="Votre message"
+            rows={4}
+            className="field-input h-28 py-3 sm:col-span-2"
+            required
+          />
+          <button
+            type="submit"
+            className="btn-primary px-6 py-3 text-sm font-semibold sm:col-span-2 sm:w-fit"
+          >
             Envoyer le message
           </button>
         </form>
+        {feedback && (
+          <p className="mt-4 text-sm" style={{ color: "var(--teal-deep)" }}>
+            {feedback}
+          </p>
+        )}
       </div>
     </div>
   );

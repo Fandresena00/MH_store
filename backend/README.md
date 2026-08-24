@@ -76,12 +76,12 @@ La migration `migrations/Version20260818000000.php` crée tout le schéma :
 (avec les colonnes de paiement PAPI + `guest_email` pour les commandes sans
 compte), `order_item`.
 
-Comptes de démonstration créés par les fixtures :
+Compte client de démonstration créé par les fixtures :
 
-| Rôle           | Email             | Mot de passe  |
-| -------------- | ----------------- | ------------- |
-| Administrateur | admin@mhstore.mg  | ChangeMoi123! |
-| Client         | hanta@example.com | ChangeMoi123! |
+| Rôle           | Email                          | Mot de passe                   |
+| -------------- | ------------------------------ | ------------------------------ |
+| Administrateur | défini dans `ADMIN_USERS_JSON` | défini dans `ADMIN_USERS_JSON` |
+| Client         | hanta@example.com              | ChangeMoi123!                  |
 
 Le compte administrateur est créé par les fixtures. En développement, pour
 l'injecter dans la base après avoir configuré `DATABASE_URL` :
@@ -89,6 +89,7 @@ l'injecter dans la base après avoir configuré `DATABASE_URL` :
 ```bash
 php bin/console doctrine:migrations:migrate
 php bin/console doctrine:fixtures:load --no-interaction
+php bin/console app:admin:sync
 ```
 
 Pour créer ou réinitialiser uniquement un administrateur sans recharger les
@@ -140,6 +141,11 @@ Toutes les réponses sont en JSON. Base URL en dev : `http://localhost:8000`.
 | POST    | `/api/checkout`                    | Publique (invité) ou JWT | Crée la commande, retourne `paymentLink` PAPI                      |
 | GET     | `/api/orders/{reference}`          | Publique                 | Suivi de commande par référence                                    |
 | GET     | `/api/account/orders`              | JWT (`ROLE_USER`)        | Historique de commandes du compte connecté                         |
+| GET     | `/api/account`                     | JWT (`ROLE_USER`)        | Informations personnelles et adresses du compte                    |
+| PUT     | `/api/account`                     | JWT (`ROLE_USER`)        | Modifie prénom, nom et téléphone                                   |
+| POST    | `/api/account/addresses`           | JWT (`ROLE_USER`)        | Ajoute une adresse                                                 |
+| PUT     | `/api/account/addresses/{id}`      | JWT (`ROLE_USER`)        | Modifie une adresse appartenant au compte                          |
+| DELETE  | `/api/account/addresses/{id}`      | JWT (`ROLE_USER`)        | Supprime une adresse appartenant au compte                         |
 | POST    | `/api/auth/register`               | Publique                 | Inscription — envoie un email et retourne `{message, email}`       |
 | GET     | `/api/auth/verify-email?token=...` | Publique                 | Vérifie l'adresse email et active le compte                        |
 | POST    | `/api/auth/login`                  | Publique                 | Géré par Lexik (json_login) — `{email, password}` → `{token}`      |
@@ -196,7 +202,7 @@ FRONTEND_URL=http://localhost:3000   # URL du Next.js, adapter en prod
 - `/admin` — tableau de bord (CA, commandes, produits, utilisateurs)
 - `/admin/produits`, `/admin/categories`, `/admin/articles` — CRUD
 - `/admin/commandes` — liste filtrable par statut + détail + changement de statut + statut de paiement PAPI visible
-- `/admin/utilisateurs` — bascule du rôle `ROLE_ADMIN` (CSRF-protégée, impossible sur soi-même ou sur le super admin)
+- `/admin/utilisateurs` — recherche et suppression d’un admin simple (CSRF-protégée). Les rôles sont définis dans `ADMIN_USERS_JSON` puis injectés avec `app:admin:sync`.
 
 Toute la mise en forme est dans **`public/css/admin.css`** — fichier CSS
 statique classique, aucune étape de build, aucune dépendance JS requise.
@@ -225,7 +231,8 @@ modifiable via une page web.
 - Pages `/checkout/succes/[reference]` et `/checkout/echec/[reference]`
   côté Next.js — purement informatives, jamais une source de vérité sur le
   paiement (seul le webhook PAPI, vérifié par jeton, fait foi côté backend).
-- Appeler `GET /api/orders/{reference}` pour afficher le suivi de commande.
+- Appeler `GET /api/orders/{reference}` pour afficher le suivi de commande,
+  y compris pour un client invité non connecté.
 - Panier géré entièrement côté Next.js (ex. Zustand) — le backend ne
   connaît le panier qu'au moment du `POST /api/checkout`.
 

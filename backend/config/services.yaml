@@ -12,18 +12,22 @@ services:
             # survivent quel que soit l'ordre de chargement de config/packages/*.yaml
             # vs ce fichier (contrairement à une définition de service séparée,
             # qui elle peut être écrasée par la redécouverte App\ ci-dessous).
-            string $superAdminOverrideCode: '%env(SUPER_ADMIN_OVERRIDE_CODE)%'
-            string $frontendUrl: '%env(FRONTEND_URL)%'
-            string $papiApiKey: '%env(PAPI_API_KEY)%'
-            string $papiApiUrl: '%env(PAPI_API_URL)%'
-            bool $papiTestMode: '%env(bool:PAPI_TEST_MODE)%'
+            string $superAdminOverrideCode: "%env(SUPER_ADMIN_OVERRIDE_CODE)%"
+            string $frontendUrl: "%env(FRONTEND_URL)%"
+            string $papiApiKey: "%env(PAPI_API_KEY)%"
+            string $papiApiUrl: "%env(PAPI_API_URL)%"
+            bool $papiTestMode: "%env(bool:PAPI_TEST_MODE)%"
+            string $productUploadDir: "%kernel.project_dir%/public/uploads/products"
+            string $adminUsersJson: "%env(ADMIN_USERS_JSON)%"
+            string $supportEmail: "%env(SUPPORT_EMAIL)%"
+            string $kernelLogsDir: "%kernel.logs_dir%"
 
     App\:
-        resource: '../src/'
+        resource: "../src/"
         exclude:
-            - '../src/DependencyInjection/'
-            - '../src/Entity/'
-            - '../src/Kernel.php'
+            - "../src/DependencyInjection/"
+            - "../src/Entity/"
+            - "../src/Kernel.php"
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

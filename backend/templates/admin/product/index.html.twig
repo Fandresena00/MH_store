@@ -3,6 +3,7 @@
 
 {% block admin_body %}
     <div class="flex items-center justify-between mb-6">
+        <form method="get" class="flex gap-2"><input type="search" name="q" value="{{ search }}" placeholder="Rechercher un produit…"><button class="btn btn-outline">Rechercher</button></form>
         <p class="text-soft">{{ products|length }} produit(s)</p>
         <a href="{{ path('admin_product_new') }}" class="btn btn-primary">+ Nouveau produit</a>
     </div>
@@ -17,7 +18,7 @@
                     <tr>
                         <td>
                             <div class="flex items-center gap-3">
-                                <div class="swatch-thumb" style="background-image: linear-gradient(135deg, {{ product.colorFrom }}, {{ product.colorTo }});"></div>
+                                <div class="swatch-thumb" style="background-image: {{ product.imagePath ? 'url(' ~ product.imagePath ~ ')' : 'linear-gradient(135deg, ' ~ product.colorFrom ~ ', ' ~ product.colorTo ~ ')' }};"></div>
                                 {{ product.name }}
                             </div>
                         </td>

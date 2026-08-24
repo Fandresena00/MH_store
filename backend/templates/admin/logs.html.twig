@@ -1,0 +1,8 @@
+{% extends 'admin/base.html.twig' %}
+{% block header_title %}Logs administrateurs{% endblock %}
+{% block admin_body %}
+    <div class="card">
+        <p class="text-soft mb-4">Dernières lignes du journal de développement. Accès réservé au super administrateur.</p>
+        <pre class="log-viewer">{{ lines|join('\n') }}</pre>
+    </div>
+{% endblock %}

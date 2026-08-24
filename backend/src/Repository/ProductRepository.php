@@ -49,6 +49,17 @@ class ProductRepository extends ServiceEntityRepository
     }
 
     /** @return Product[] */
+    public function findForAdmin(?string $search = null): array
+    {
+        $qb = $this->createQueryBuilder('p')->join('p.category', 'c')->addSelect('c');
+        if ($search) {
+            $qb->andWhere('LOWER(p.name) LIKE :search OR LOWER(p.slug) LIKE :search OR LOWER(c.name) LIKE :search')
+                ->setParameter('search', '%'.mb_strtolower($search).'%');
+        }
+        return $qb->orderBy('p.id', 'DESC')->getQuery()->getResult();
+    }
+
+    /** @return Product[] */
     public function findRelated(Product $product, int $limit = 4): array
     {
         return $this->createQueryBuilder('p')
